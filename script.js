@@ -1,6 +1,6 @@
 // ─── CONFIG ───────────────────────────────────────────────
-// No API Key needed! Using Invidious API as a free, serverless fallback.
-const INVIDIOUS_API_URL = "https://vid.puffyan.us/api/v1"; 
+// Using a more reliable Invidious instance
+const INVIDIOUS_API_URL = "https://invidious.nerdvpn.de/api/v1"; 
 const MAX_RESULTS = 20;
 
 // ─── STATE ────────────────────────────────────────────────
@@ -212,14 +212,15 @@ async function searchYT(query) {
   empty.classList.add("hidden");
 
   try {
-    // Fetching from Invidious API instead of Google Data API
-    const url = `${INVIDIOUS_API_URL}/search?q=${encodeURIComponent(query)}&type=video`;
+    // Using CORS proxy to bypass GitHub Pages blocking
+    const targetUrl = `${INVIDIOUS_API_URL}/search?q=${encodeURIComponent(query)}&type=video`;
+    const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    
     const res = await fetch(url);
     if (!res.ok) throw new Error("Instance error");
     const data = await res.json();
 
     const items = data || [];
-    // Ensure we only pull videos, slice to max results
     const videos = items.filter(item => item.type === "video").slice(0, MAX_RESULTS);
 
     if (videos.length === 0) {
@@ -231,7 +232,6 @@ async function searchYT(query) {
       id: item.videoId,
       title: item.title,
       channel: item.author,
-      // Pulling thumbnail directly from YouTube for speed and reliability
       thumb: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
     }));
 
@@ -270,7 +270,10 @@ async function loadFeed(query, containerId) {
   if (!container) return;
 
   try {
-    const url = `${INVIDIOUS_API_URL}/search?q=${encodeURIComponent(query)}&type=video`;
+    // Using CORS proxy here as well
+    const targetUrl = `${INVIDIOUS_API_URL}/search?q=${encodeURIComponent(query)}&type=video`;
+    const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    
     const res = await fetch(url);
     if (!res.ok) throw new Error("Instance error");
     const data = await res.json();
