@@ -1,5 +1,5 @@
 // ─── CONFIG ───────────────────────────────────────────────
-const YT_API_KEY = "AIzaSyAjVktVSQ4057wYVg8XDj******"
+const YT_API_KEY = "AIzaSyAjVktVSQ4057wYVg8XDjgKXDjAOIj7NuU";
 const MAX_RESULTS = 20;
 
 // ─── STATE ────────────────────────────────────────────────
