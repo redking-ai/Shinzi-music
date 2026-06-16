@@ -1,5 +1,6 @@
 // ─── CONFIG ───────────────────────────────────────────────
-const YT_API_KEY = "AIzaSyAjVktVSQ4057wYVg8XDjgKXDjAOIj7NuU";
+// No API Key needed! Using Invidious API as a free, serverless fallback.
+const INVIDIOUS_API_URL = "https://vid.puffyan.us/api/v1"; 
 const MAX_RESULTS = 20;
 
 // ─── STATE ────────────────────────────────────────────────
@@ -12,7 +13,7 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── YOUTUBE IFRAME API ───────────────────────────────────
+// ─── YOUTUBE IFRAME API (For Playback) ────────────────────
 function loadYTApi() {
   const tag = document.createElement("script");
   tag.src = "https://www.youtube.com/iframe_api";
@@ -163,7 +164,7 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
-// ─── SEARCH ───────────────────────────────────────────────
+// ─── INVIDIOUS SEARCH ─────────────────────────────────────
 const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
 let searchTimeout = null;
@@ -211,23 +212,27 @@ async function searchYT(query) {
   empty.classList.add("hidden");
 
   try {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&maxResults=${MAX_RESULTS}&key=${YT_API_KEY}`;
+    // Fetching from Invidious API instead of Google Data API
+    const url = `${INVIDIOUS_API_URL}/search?q=${encodeURIComponent(query)}&type=video`;
     const res = await fetch(url);
+    if (!res.ok) throw new Error("Instance error");
     const data = await res.json();
 
-    if (data.error) throw new Error(data.error.message);
+    const items = data || [];
+    // Ensure we only pull videos, slice to max results
+    const videos = items.filter(item => item.type === "video").slice(0, MAX_RESULTS);
 
-    const items = data.items || [];
-    if (items.length === 0) {
+    if (videos.length === 0) {
       empty.classList.remove("hidden");
       return;
     }
 
-    currentQueue = items.map((item, i) => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      channel: item.snippet.channelTitle,
-      thumb: item.snippet.thumbnails?.medium?.url || "",
+    currentQueue = videos.map((item, i) => ({
+      id: item.videoId,
+      title: item.title,
+      channel: item.author,
+      // Pulling thumbnail directly from YouTube for speed and reliability
+      thumb: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
     }));
 
     results.innerHTML = currentQueue.map((track, i) => `
@@ -243,7 +248,7 @@ async function searchYT(query) {
   } catch (err) {
     console.error("Search error:", err);
     empty.classList.remove("hidden");
-    empty.querySelector("p").textContent = "Search failed. Check your API key!";
+    empty.querySelector("p").textContent = "Search failed. The public API instance might be busy!";
   } finally {
     loading.classList.add("hidden");
   }
@@ -259,25 +264,27 @@ function playFromQueue(index) {
   });
 }
 
-// ─── FEED LOADER ──────────────────────────────────────────
+// ─── INVIDIOUS FEED LOADER ────────────────────────────────
 async function loadFeed(query, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   try {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&maxResults=8&key=${YT_API_KEY}`;
+    const url = `${INVIDIOUS_API_URL}/search?q=${encodeURIComponent(query)}&type=video`;
     const res = await fetch(url);
+    if (!res.ok) throw new Error("Instance error");
     const data = await res.json();
-    if (data.error) return;
 
-    const items = (data.items || []).map(item => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      channel: item.snippet.channelTitle,
-      thumb: item.snippet.thumbnails?.medium?.url || "",
+    const items = (data || []).filter(item => item.type === "video").slice(0, 8);
+
+    const tracks = items.map(item => ({
+      id: item.videoId,
+      title: item.title,
+      channel: item.author,
+      thumb: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
     }));
 
-    container.innerHTML = items.map((track, i) => `
+    container.innerHTML = tracks.map((track, i) => `
       <div class="music-card" onclick="playFeedTrack('${containerId}', ${i})">
         <img class="card-thumb" src="${track.thumb}" alt="" onerror="this.style.display='none'">
         <div class="card-title">${escHtml(track.title)}</div>
@@ -289,7 +296,7 @@ async function loadFeed(query, containerId) {
     `).join("");
 
     // Store feed data
-    container._feedData = items;
+    container._feedData = tracks;
   } catch (err) {
     console.error("Feed error:", err);
   }
