@@ -1,251 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shinzi Music - Web Player</title>
-    <style>
-        /* Base Styling */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top Navigation Header (Mobile Friendly) */
-        header {
-            background-color: #121212;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1db954; /* Spotify Green */
-            letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .profile-icon {
-            width: 35px;
-            height: 35px;
-            background-color: #535353;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-        }
-
-        /* Main Content Area */
-        main {
-            flex: 1;
-            background: linear-gradient(to bottom, #1e3264 0%, #121212 100%);
-            padding: 20px;
-            overflow-y: auto;
-            padding-bottom: 90px; /* Space for the bottom player */
-        }
-
-        h2 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        /* Playlist Grid */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 columns for phone screens */
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: #181818;
-            padding: 15px;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
-        }
-
-        .card:hover {
-            background-color: #282828;
-        }
-
-        .card-img {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background-color: #333;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 40px;
-        }
-
-        .card h3 {
-            font-size: 14px;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .card p {
-            font-size: 12px;
-            color: #b3b3b3;
-            line-height: 1.4;
-        }
-
-        /* Bottom Music Player */
-        .player {
-            background-color: #181818;
-            border-top: 1px solid #282828;
-            height: 80px;
-            width: 100%;
-            position: fixed;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            z-index: 100;
-        }
-
-        .track-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .track-art {
-            width: 50px;
-            height: 50px;
-            background-color: #1db954;
-            border-radius: 4px;
-        }
-
-        .track-text h4 {
-            font-size: 14px;
-            margin-bottom: 3px;
-        }
-
-        .track-text p {
-            font-size: 11px;
-            color: #b3b3b3;
-        }
-
-        .controls {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .play-btn {
-            width: 40px;
-            height: 40px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #000;
-            font-weight: bold;
-            font-size: 18px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shinzi Music</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
 
-    <header>
-        <div class="logo">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-            </svg>
-            Shinzi Music
-        </div>
-        <div class="profile-icon">S</div>
-    </header>
-
-    <main>
-        <h2>Good Afternoon</h2>
-        
-        <div class="grid-container">
-            <div class="card">
-                <div class="card-img" style="background: linear-gradient(135deg, #FF7E5F, #FEB47B);">🔥</div>
-                <h3>Top Hits India</h3>
-                <p>Catch the hottest tracks right now.</p>
-            </div>
-            
-            <div class="card">
-                <div class="card-img" style="background: linear-gradient(135deg, #00C9FF, #92FE9D);">🎧</div>
-                <h3>Lofi Study Beats</h3>
-                <p>Chill beats to focus and relax to.</p>
-            </div>
-
-            <div class="card">
-                <div class="card-img" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0);">🌌</div>
-                <h3>Midnight Vibes</h3>
-                <p>Deep sounds for late night coding.</p>
-            </div>
-
-            <div class="card">
-                <div class="card-img" style="background: linear-gradient(135deg, #f12711, #f5af19);">🎸</div>
-                <h3>Rock Classics</h3>
-                <p>The legends of rock in one place.</p>
-            </div>
-        </div>
-
-        <h2>Made for You</h2>
-        <div class="grid-container">
-             <div class="card">
-                <div class="card-img" style="background: linear-gradient(135deg, #11998e, #38ef7d);">🎵</div>
-                <h3>Daily Mix 1</h3>
-                <p>A mix of music you love.</p>
-            </div>
-             <div class="card">
-                <div class="card-img" style="background: linear-gradient(135deg, #fc4a1a, #f7b733);">🔊</div>
-                <h3>Discover Weekly</h3>
-                <p>New music tailored for you.</p>
-            </div>
-        </div>
-    </main>
-
-    <div class="player">
-        <div class="track-info">
-            <div class="track-art"></div>
-            <div class="track-text">
-                <h4>Not Playing</h4>
-                <p>Shinzi AI</p>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="#b3b3b3">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-            <div class="play-btn">▶</div>
-        </div>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-circle">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 3L14.5 9L21 11.5L14.5 14L12 21L9.5 14L3 11.5L9.5 9L12 3Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="logo-text">Shinzi <span class="logo-music">Music</span></span>
     </div>
 
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" id="navHome">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        Home
+      </a>
+      <a href="#" class="nav-item" id="navSearch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Search
+      </a>
+      <a href="#" class="nav-item" id="navLibrary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        Your Library
+      </a>
+    </nav>
+
+    <div class="sidebar-section">
+      <div class="section-header">
+        <span>Playlists</span>
+        <button class="add-btn" id="addPlaylist">+</button>
+      </div>
+      <div id="playlistList" class="playlist-list">
+        <p class="empty-text">No playlists yet</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="nav-arrows">
+        <button class="arrow-btn" onclick="history.back()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="arrow-btn" onclick="history.forward()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="search-bar" id="searchBar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="What do you want to listen to?" autocomplete="off">
+        <button class="search-clear hidden" id="searchClear">×</button>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-btn">Upgrade</button>
+        <div class="user-avatar">S</div>
+      </div>
+    </header>
+
+    <!-- Home Section -->
+    <section id="homeSection" class="section">
+      <div class="greeting" id="greeting">Good Morning</div>
+
+      <!-- Quick picks grid -->
+      <div class="quick-grid" id="quickGrid">
+        <div class="quick-card" data-query="Top Hits India">
+          <div class="quick-thumb" style="background:linear-gradient(135deg,#ff6b35,#f7931e)">🔥</div>
+          <span>Top Hits India</span>
+        </div>
+        <div class="quick-card" data-query="Lofi Study Beats">
+          <div class="quick-thumb" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🎧</div>
+          <span>Lofi Study Beats</span>
+        </div>
+        <div class="quick-card" data-query="Phonk Music">
+          <div class="quick-thumb" style="background:linear-gradient(135deg,#667eea,#764ba2)">🌙</div>
+          <span>Phonk Vibes</span>
+        </div>
+        <div class="quick-card" data-query="Rock Classics">
+          <div class="quick-thumb" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🎸</div>
+          <span>Rock Classics</span>
+        </div>
+        <div class="quick-card" data-query="Anime OST music">
+          <div class="quick-thumb" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">⚡</div>
+          <span>Anime OST</span>
+        </div>
+        <div class="quick-card" data-query="Jujutsu Kaisen OST">
+          <div class="quick-thumb" style="background:linear-gradient(135deg,#43e97b,#667eea)">🌸</div>
+          <span>JJK Soundtrack</span>
+        </div>
+      </div>
+
+      <!-- Made for you -->
+      <div class="section-title-row">
+        <h2>Made for you</h2>
+      </div>
+      <div class="cards-row" id="madeForYou"></div>
+
+      <!-- Trending -->
+      <div class="section-title-row">
+        <h2>Trending Now</h2>
+        <a href="#" class="show-all">Show all</a>
+      </div>
+      <div class="cards-row" id="trendingRow"></div>
+
+      <!-- Phonk Feed -->
+      <div class="section-title-row">
+        <h2>🔥 Phonk Feed</h2>
+        <a href="#" class="show-all">Show all</a>
+      </div>
+      <div class="cards-row" id="phonkRow"></div>
+
+      <!-- Anime Feed -->
+      <div class="section-title-row">
+        <h2>⚡ Anime Hits</h2>
+        <a href="#" class="show-all">Show all</a>
+      </div>
+      <div class="cards-row" id="animeRow"></div>
+    </section>
+
+    <!-- Search Results Section -->
+    <section id="searchSection" class="section hidden">
+      <h2 class="search-results-title">Search Results</h2>
+      <div id="searchResults" class="search-results-grid"></div>
+      <div id="searchLoading" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p>Searching...</p>
+      </div>
+      <div id="searchEmpty" class="empty-state hidden">
+        <p>No results found. Try a different search!</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Now Playing Bar -->
+  <div class="now-playing-bar" id="nowPlayingBar">
+    <div class="np-left">
+      <div class="np-thumb" id="npThumb">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+      </div>
+      <div class="np-info">
+        <div class="np-title" id="npTitle">Not Playing</div>
+        <div class="np-artist" id="npArtist">Shinzi AI</div>
+      </div>
+      <button class="np-heart" id="npHeart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+    </div>
+
+    <div class="np-center">
+      <div class="np-controls">
+        <button class="ctrl-btn" id="btnShuffle" title="Shuffle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnPrev" title="Previous">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+        </button>
+        <button class="ctrl-btn play-pause-btn" id="btnPlayPause" title="Play/Pause">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnNext" title="Next">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnRepeat" title="Repeat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+      </div>
+      <div class="np-progress">
+        <span class="time" id="currentTime">0:00</span>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+          <div class="progress-thumb" id="progressThumb"></div>
+        </div>
+        <span class="time" id="totalTime">0:00</span>
+      </div>
+    </div>
+
+    <div class="np-right">
+      <button class="ctrl-btn" id="btnVolume">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      </button>
+      <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
+    </div>
+  </div>
+
+  <!-- Hidden YouTube Player -->
+  <div id="ytPlayerContainer" style="position:fixed;bottom:80px;right:20px;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none;">
+    <div id="ytPlayer"></div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
