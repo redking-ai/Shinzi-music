@@ -1,6 +1,11 @@
 // ─── CONFIG ───────────────────────────────────────────────
-// Using Piped API - Much more stable than Invidious and handles CORS natively.
-const PIPED_API_URL = "https://pipedapi.kavin.rocks"; 
+// We loop through these if one goes offline or gets rate-limited.
+const PIPED_INSTANCES = [
+  "https://pipedapi.in.projectsegfau.lt", // India region server (fastest)
+  "https://pipedapi.smnz.de",
+  "https://piped-api.garudalinux.org",
+  "https://pipedapi.kavin.rocks"
+];
 const MAX_RESULTS = 20;
 
 // ─── STATE ────────────────────────────────────────────────
@@ -166,15 +171,32 @@ function formatTime(sec) {
 
 // ─── FALLBACK MOCK DATA (Bulletproof Safety Net) ──────────
 const fallbackTracks = [
-  { id: "fhr3uZ23E6E", title: "Jujutsu Kaisen - SPECIALZ", channel: "King Gnu", thumb: "https://i.ytimg.com/vi/fhr3uZ23E6E/hqdefault.jpg" },
+  { id: "5ycOgsP-x68", title: "Jujutsu Kaisen - SPECIALZ", channel: "Crunchyroll", thumb: "https://i.ytimg.com/vi/5ycOgsP-x68/hqdefault.jpg" },
   { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
-  { id: "W8ZvA_X1WGo", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/W8ZvA_X1WGo/hqdefault.jpg" },
-  { id: "k-f_E4s4iK0", title: "Hindi Top Hits Mashup", channel: "Shinzi Mix", thumb: "https://i.ytimg.com/vi/k-f_E4s4iK0/hqdefault.jpg" },
-  { id: "B_HMAZ9MdrM", title: "Anime Lofi Mix", channel: "Lofi Girl", thumb: "https://i.ytimg.com/vi/B_HMAZ9MdrM/hqdefault.jpg" },
-  { id: "Dxk0zS4-d-c", title: "Gojo vs Toji Epic Ost", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/Dxk0zS4-d-c/hqdefault.jpg" }
+  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
+  { id: "8uI3A-V3Bhs", title: "Hindi Top Hits Mashup", channel: "Shinzi Mix", thumb: "https://i.ytimg.com/vi/8uI3A-V3Bhs/hqdefault.jpg" },
+  { id: "8q5gHRigobk", title: "Anime Lofi Mix", channel: "Lofi Girl", thumb: "https://i.ytimg.com/vi/8q5gHRigobk/hqdefault.jpg" },
+  { id: "tB-yNqWbOAM", title: "Gojo vs Toji Epic Ost", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/tB-yNqWbOAM/hqdefault.jpg" }
 ];
 
-// ─── PIPED SEARCH ─────────────────────────────────────────
+// ─── PIPED API FETCH HELPER ───────────────────────────────
+// Loops through our server list automatically so the app never breaks
+async function fetchPipedData(query) {
+  for (const instance of PIPED_INSTANCES) {
+    try {
+      const url = `${instance}/search?q=${encodeURIComponent(query)}&filter=all`;
+      const res = await fetch(url);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      console.warn(`Server ${instance} busy, trying the next one...`);
+    }
+  }
+  throw new Error("All search servers are currently busy.");
+}
+
+// ─── SEARCH SYSTEM ────────────────────────────────────────
 const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
 let searchTimeout = null;
@@ -222,17 +244,15 @@ async function searchYT(query) {
   empty.classList.add("hidden");
 
   try {
-    const url = `${PIPED_API_URL}/search?q=${encodeURIComponent(query)}&filter=all`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("API Offline");
-    
-    const data = await res.json();
+    const data = await fetchPipedData(query);
     const items = data.items || [];
     
     // Filter out playlists/channels, keep only videos
     const videos = items.filter(item => item.type === "stream").slice(0, MAX_RESULTS);
 
-    if (videos.length === 0) throw new Error("No results");
+    if (videos.length === 0) {
+      throw new Error("No results found.");
+    }
 
     currentQueue = videos.map((item) => ({
       id: item.url.split("?v=")[1] || item.url.split("/").pop(),
@@ -241,14 +261,6 @@ async function searchYT(query) {
       thumb: item.thumbnail,
     }));
 
-  } catch (err) {
-    console.warn("Piped API failed, using fallback data...", err);
-    // BULLETPROOF FALLBACK: Never show an empty screen
-    currentQueue = fallbackTracks;
-  } finally {
-    loading.classList.add("hidden");
-    
-    // Render results
     results.innerHTML = currentQueue.map((track, i) => `
       <div class="search-item" data-index="${i}" onclick="playFromQueue(${i})">
         <img class="search-thumb" src="${track.thumb}" alt="" onerror="this.style.background='#333';this.src=''">
@@ -258,6 +270,14 @@ async function searchYT(query) {
         </div>
       </div>
     `).join("");
+
+  } catch (err) {
+    empty.classList.remove("hidden");
+    empty.querySelector("p").textContent = err.message === "No results found." 
+      ? "No songs found for that search!" 
+      : "All search servers are busy. Try again in a minute!";
+  } finally {
+    loading.classList.add("hidden");
   }
 }
 
@@ -271,17 +291,13 @@ function playFromQueue(index) {
   });
 }
 
-// ─── PIPED FEED LOADER ────────────────────────────────────
+// ─── HOMEPAGE FEED LOADER ─────────────────────────────────
 async function loadFeed(query, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   try {
-    const url = `${PIPED_API_URL}/search?q=${encodeURIComponent(query)}&filter=all`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("API Offline");
-    
-    const data = await res.json();
+    const data = await fetchPipedData(query);
     const items = (data.items || []).filter(item => item.type === "stream").slice(0, 8);
     
     if (items.length === 0) throw new Error("No items");
@@ -297,7 +313,7 @@ async function loadFeed(query, containerId) {
 
   } catch (err) {
     console.warn(`Feed ${containerId} failed, using fallback...`, err);
-    // BULLETPROOF FALLBACK for grids
+    // BULLETPROOF FALLBACK for grids only
     container._feedData = fallbackTracks.slice(0, 8);
   }
 
