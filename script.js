@@ -1,7 +1,6 @@
 // ─── CONFIG ───────────────────────────────────────────────
-// We loop through these if one goes offline or gets rate-limited.
 const PIPED_INSTANCES = [
-  "https://pipedapi.in.projectsegfau.lt", // India region server (fastest)
+  "https://pipedapi.in.projectsegfau.lt", 
   "https://pipedapi.smnz.de",
   "https://piped-api.garudalinux.org",
   "https://pipedapi.kavin.rocks"
@@ -170,27 +169,30 @@ function formatTime(sec) {
 }
 
 // ─── FALLBACK MOCK DATA (Bulletproof Safety Net) ──────────
+// Swapped dead links for globally unlocked, guaranteed videos
 const fallbackTracks = [
-  { id: "5ycOgsP-x68", title: "Jujutsu Kaisen - SPECIALZ", channel: "Crunchyroll", thumb: "https://i.ytimg.com/vi/5ycOgsP-x68/hqdefault.jpg" },
+  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
   { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
   { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
-  { id: "8uI3A-V3Bhs", title: "Hindi Top Hits Mashup", channel: "Shinzi Mix", thumb: "https://i.ytimg.com/vi/8uI3A-V3Bhs/hqdefault.jpg" },
-  { id: "8q5gHRigobk", title: "Anime Lofi Mix", channel: "Lofi Girl", thumb: "https://i.ytimg.com/vi/8q5gHRigobk/hqdefault.jpg" },
-  { id: "tB-yNqWbOAM", title: "Gojo vs Toji Epic Ost", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/tB-yNqWbOAM/hqdefault.jpg" }
+  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
+  { id: "jfKfPfyJRdk", title: "lofi hip hop radio", channel: "Lofi Girl", thumb: "https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg" },
+  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
 ];
 
-// ─── PIPED API FETCH HELPER ───────────────────────────────
-// Loops through our server list automatically so the app never breaks
+// ─── PIPED API FETCH HELPER (WITH CORS TUNNEL) ────────────
+// This tunnels through corsproxy.io so GitHub Pages doesn't block the search
 async function fetchPipedData(query) {
   for (const instance of PIPED_INSTANCES) {
     try {
-      const url = `${instance}/search?q=${encodeURIComponent(query)}&filter=all`;
-      const res = await fetch(url);
+      const targetUrl = `${instance}/search?q=${encodeURIComponent(query)}&filter=all`;
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+      
+      const res = await fetch(proxyUrl);
       if (res.ok) {
         return await res.json();
       }
     } catch (err) {
-      console.warn(`Server ${instance} busy, trying the next one...`);
+      console.warn(`Server ${instance} blocked, trying the next one...`);
     }
   }
   throw new Error("All search servers are currently busy.");
