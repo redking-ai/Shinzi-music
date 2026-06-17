@@ -173,9 +173,12 @@ const fallbackTracks = [
   { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
 ];
 
-// ─── SECURE PROXY FETCH HELPER ────────────────────────────
+// ─── SECURE PROXY FETCH HELPER (WITH AD-REDUCTION TRICK) ──
 async function fetchFromBackendProxy(query) {
-  const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(query)}`;
+  // 🔥 THE FIX: Secretly appending "official audio" skips ad-heavy music videos
+  // and forces the API to fetch clean YouTube Music auto-generated tracks.
+  const optimizedQuery = query + " official audio";
+  const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(optimizedQuery)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Backend connection error");
   return await res.json();
@@ -236,7 +239,6 @@ async function searchYT(query) {
       throw new Error("No results found.");
     }
 
-    // Map output based directly on official YouTube Data API response format
     currentQueue = items.map((item) => ({
       id: item.id.videoId,
       title: item.snippet.title,
