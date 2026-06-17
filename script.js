@@ -1,10 +1,6 @@
 // ─── CONFIG ───────────────────────────────────────────────
-const PIPED_INSTANCES = [
-  "https://pipedapi.in.projectsegfau.lt", 
-  "https://pipedapi.smnz.de",
-  "https://piped-api.garudalinux.org",
-  "https://pipedapi.kavin.rocks"
-];
+// Pointing straight to your official, secure Render proxy gateway
+const BACKEND_SEARCH_URL = "https://shinzi-proxy.onrender.com/music/search";
 const MAX_RESULTS = 20;
 
 // ─── STATE ────────────────────────────────────────────────
@@ -168,34 +164,21 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
-// ─── FALLBACK MOCK DATA (Bulletproof Safety Net) ──────────
-// Swapped dead links for globally unlocked, guaranteed videos
+// ─── FALLBACK LOCAL DATA (In case free Render server is waking up) ───
 const fallbackTracks = [
   { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
   { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
   { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
   { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
-  { id: "jfKfPfyJRdk", title: "lofi hip hop radio", channel: "Lofi Girl", thumb: "https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg" },
   { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
 ];
 
-// ─── PIPED API FETCH HELPER (WITH CORS TUNNEL) ────────────
-// This tunnels through corsproxy.io so GitHub Pages doesn't block the search
-async function fetchPipedData(query) {
-  for (const instance of PIPED_INSTANCES) {
-    try {
-      const targetUrl = `${instance}/search?q=${encodeURIComponent(query)}&filter=all`;
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-      
-      const res = await fetch(proxyUrl);
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (err) {
-      console.warn(`Server ${instance} blocked, trying the next one...`);
-    }
-  }
-  throw new Error("All search servers are currently busy.");
+// ─── SECURE PROXY FETCH HELPER ────────────────────────────
+async function fetchFromBackendProxy(query) {
+  const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Backend connection error");
+  return await res.json();
 }
 
 // ─── SEARCH SYSTEM ────────────────────────────────────────
@@ -246,21 +229,19 @@ async function searchYT(query) {
   empty.classList.add("hidden");
 
   try {
-    const data = await fetchPipedData(query);
+    const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
-    
-    // Filter out playlists/channels, keep only videos
-    const videos = items.filter(item => item.type === "stream").slice(0, MAX_RESULTS);
 
-    if (videos.length === 0) {
+    if (items.length === 0) {
       throw new Error("No results found.");
     }
 
-    currentQueue = videos.map((item) => ({
-      id: item.url.split("?v=")[1] || item.url.split("/").pop(),
-      title: item.title,
-      channel: item.uploaderName,
-      thumb: item.thumbnail,
+    // Map output based directly on official YouTube Data API response format
+    currentQueue = items.map((item) => ({
+      id: item.id.videoId,
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle,
+      thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
     }));
 
     results.innerHTML = currentQueue.map((track, i) => `
@@ -277,7 +258,7 @@ async function searchYT(query) {
     empty.classList.remove("hidden");
     empty.querySelector("p").textContent = err.message === "No results found." 
       ? "No songs found for that search!" 
-      : "All search servers are busy. Try again in a minute!";
+      : "Shinzi Proxy is waking up. Please try searching again in a few seconds!";
   } finally {
     loading.classList.add("hidden");
   }
@@ -299,24 +280,23 @@ async function loadFeed(query, containerId) {
   if (!container) return;
 
   try {
-    const data = await fetchPipedData(query);
-    const items = (data.items || []).filter(item => item.type === "stream").slice(0, 8);
+    const data = await fetchFromBackendProxy(query);
+    const items = data.items || [];
     
     if (items.length === 0) throw new Error("No items");
 
-    const tracks = items.map(item => ({
-      id: item.url.split("?v=")[1] || item.url.split("/").pop(),
-      title: item.title,
-      channel: item.uploaderName,
-      thumb: item.thumbnail,
+    const tracks = items.map((item) => ({
+      id: item.id.videoId,
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle,
+      thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
     }));
 
     container._feedData = tracks;
 
   } catch (err) {
-    console.warn(`Feed ${containerId} failed, using fallback...`, err);
-    // BULLETPROOF FALLBACK for grids only
-    container._feedData = fallbackTracks.slice(0, 8);
+    console.warn(`Feed ${containerId} failed, parsing local fallback matrix...`);
+    container._feedData = fallbackTracks;
   }
 
   // Render cards
@@ -389,7 +369,7 @@ function init() {
   setGreeting();
   loadYTApi();
 
-  // Load all feeds
+  // Load official high-fidelity dashboard streams
   loadFeed("Top Hindi Songs", "madeForYou");
   loadFeed("Trending Music India", "trendingRow");
   loadFeed("Phonk Music", "phonkRow");
