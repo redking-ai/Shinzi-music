@@ -105,15 +105,15 @@
 
         /* MOBILE INNER FULL-SCREEN PLAYER */
         .inner-player-screen {
-            position: fixed; top: 100%; left: 0; width: 100vw; height: 100vh;
+            position: fixed; top: 100%; left: 0; width: 100vw; height: 100dvh;
             background: linear-gradient(to bottom, #303030 0%, #000000 100%);
-            z-index: 2000; padding: 24px; display: flex; flex-direction: column;
-            transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
+            z-index: 2000; padding: 48px 24px 24px 24px; display: flex; flex-direction: column;
+            transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1); box-sizing: border-box;
         }
         .inner-player-screen.active { transform: translateY(-100%); }
-        .inner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .inner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; min-height: 40px; }
         .inner-header-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--text-main); text-transform: uppercase; }
-        .inner-header button { background: none; border: none; color: #fff; cursor: pointer; padding: 8px; }
+        .inner-header button { background: none; border: none; color: #fff; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; }
         .inner-header button svg { width: 24px; height: 24px; }
         
         .inner-artwork-container { width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; margin-bottom: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
@@ -174,7 +174,7 @@
         <main class="main-content">
             
             <section id="homeSection">
-                <h1 id="greeting">Good Loading...</h1>
+                <h1 id="greeting">Welcome to Shinzi</h1>
                 <div class="quick-grid">
                     <div class="quick-card" data-query="Phonk mix"><div class="quick-card-img"><svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10s-10-4.48-10-10s4.48-10 10-10zm0 2c-4.42 0-8 3.58-8 8s3.58 8 8 8s8-3.58 8-8s-3.58-8-8-8zm0 3c2.76 0 5 2.24 5 5s-2.24 5-5 5s-5-2.24-5-5s2.24-5 5-5zm0 2c-1.66 0-3 1.34-3 3s1.34 3 3 3s3-1.34 3-3s-1.34-3-3-3z"/></svg></div><h3>Phonk Vibes</h3></div>
                     <div class="quick-card" data-query="Lo-Fi Beats for coding"><div class="quick-card-img"><svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div><h3>Lofi Coding</h3></div>
