@@ -128,11 +128,18 @@
         .inner-timeline { margin-bottom: 24px; }
         .inner-time-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sub); margin-top: 8px; }
         
-        /* 🔥 THE SVG FIX 🔥 */
-        .inner-controls { display: flex; justify-content: space-between; align-items: center; padding: 0 8px; }
-        .inner-controls .media-action-btn { padding: 12px; } /* Makes buttons easier to tap on mobile */
-        .inner-controls .media-action-btn svg { width: 24px; height: 24px; }
-        .inner-play-btn { width: 64px; height: 64px; border-radius: 50%; background: #fff; color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        /* 🔥 FIXED ICONS: strict widths and padding to prevent squishing */
+        .inner-controls { display: flex; justify-content: space-between; align-items: center; padding: 0; }
+        .inner-controls .media-action-btn { 
+            padding: 12px; 
+            min-width: 48px; 
+            min-height: 48px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .inner-controls .media-action-btn svg { width: 24px; height: 24px; min-width: 24px; }
+        .inner-play-btn { width: 64px; height: 64px; border-radius: 50%; background: #fff; color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .inner-play-btn svg { width: 28px; height: 28px; fill: #000; }
 
         /* Responsive Mobile */
@@ -164,7 +171,6 @@
 <body>
 
     <div class="app-container">
-        <!-- Desktop Sidebar -->
         <nav class="sidebar">
             <div class="logo">Shinzi Music</div>
             <ul class="nav-links">
@@ -174,10 +180,8 @@
             </ul>
         </nav>
 
-        <!-- Main Workspace -->
         <main class="main-content">
             
-            <!-- HOME VIEW -->
             <section id="homeSection">
                 <h1 id="greeting">Welcome to Shinzi</h1>
                 <div class="quick-grid">
@@ -189,7 +193,6 @@
                 <h2>Anime Openings</h2><div id="animeRow" class="shelf-row"></div>
             </section>
 
-            <!-- SEARCH VIEW -->
             <section id="searchSection" class="hidden">
                 <h1>Search</h1>
                 <div class="search-container">
@@ -202,7 +205,6 @@
                 <div id="searchEmpty" class="status-msg-box hidden"><p>Type to look up media tracking.</p></div>
             </section>
 
-            <!-- LIBRARY VIEW -->
             <section id="librarySection" class="hidden">
                 <h1>Your Favorites</h1>
                 <div id="favoritesList" class="results-vertical-list"></div>
@@ -211,7 +213,6 @@
         </main>
     </div>
 
-    <!-- PERSISTENT FOOTER PLAYBACK BAR -->
     <footer class="playback-console-bar" id="mainPlayerBar">
         <div class="track-metadata-block">
             <div id="npThumb" class="meta-artwork-frame"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>
@@ -219,7 +220,6 @@
                 <div id="npTitle" class="meta-track-name">Not Playing</div>
                 <div id="npArtist" class="meta-artist-name">Select a song</div>
             </div>
-            <!-- Mini play button for mobile -->
             <button class="mobile-mini-play" id="mobilePlayBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
             <button id="npHeart" class="heart-icon-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
         </div>
@@ -249,7 +249,6 @@
         </div>
     </footer>
 
-    <!-- MOBILE INNER SCREEN (NOW HAS FULL UN-CHOPPED SVG ICONS) -->
     <div id="innerPlayerScreen" class="inner-player-screen">
         <div class="inner-header">
             <button id="closeInnerScreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -280,7 +279,6 @@
         </div>
 
         <div class="inner-controls">
-            <!-- FULLY RESTORED ICONS -->
             <button id="innerShuffle" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.12L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button>
             <button id="innerPrev" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
             <button id="innerPlayBtn" class="inner-play-btn">
@@ -292,7 +290,6 @@
         </div>
     </div>
 
-    <!-- MOBILE OVERLAY NAVIGATION PILLS -->
     <nav class="mobile-bottom-navbar">
         <button id="mobileNavHome" class="mobile-nav-btn active" onclick="showSection('home')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</button>
         <button id="mobileNavSearch" class="mobile-nav-btn" onclick="showSection('search')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
