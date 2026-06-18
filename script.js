@@ -10,6 +10,15 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
+// ─── FALLBACK DATA (For when the backend is asleep) ───────
+const fallbackTracks = [
+  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
+  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
+  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
+  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
+  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
+];
+
 // ─── FAVORITES DATABASE ───────────────────────────────────
 let userFavorites = JSON.parse(localStorage.getItem('shinzi_favorites')) || [];
 
@@ -78,17 +87,15 @@ function playVideo(videoId, title, channel, thumb) {
   updateNowPlaying(title, channel, thumb);
   isPlaying = true;
   updatePlayPauseBtn();
-  checkIfFavorite(); // Update heart icon
+  checkIfFavorite();
 }
 
 function updateNowPlaying(title, channel, thumb) {
-  // Update Bottom Bar
   document.getElementById("npTitle").textContent = title || "Unknown";
   document.getElementById("npArtist").textContent = channel || "Shinzi Music";
   const highResThumb = thumb || "https://i.ytimg.com/vi/default/hqdefault.jpg";
   document.getElementById("npThumb").innerHTML = `<img src="${highResThumb}" alt="thumb">`;
 
-  // Update Inner Screen
   document.getElementById("innerTitle").textContent = title || "Unknown";
   document.getElementById("innerArtist").textContent = channel || "Shinzi Music";
   document.getElementById("innerThumbImg").src = highResThumb;
@@ -114,15 +121,12 @@ function togglePlayPause() {
 }
 
 function updatePlayPauseBtn() {
-  // Bottom Bar
   document.getElementById("playIcon").classList.toggle("hidden", isPlaying);
   document.getElementById("pauseIcon").classList.toggle("hidden", !isPlaying);
   
-  // Inner Screen
   document.getElementById("innerPlayIcon").classList.toggle("hidden", isPlaying);
   document.getElementById("innerPauseIcon").classList.toggle("hidden", !isPlaying);
   
-  // Mobile Mini
   const mobilePlay = document.getElementById("mobilePlayBtn");
   if(mobilePlay) {
     mobilePlay.innerHTML = isPlaying 
@@ -169,12 +173,10 @@ function updateProgress() {
   const total = ytPlayer.getDuration() || 0;
   const pct = total > 0 ? (current / total) * 100 : 0;
 
-  // Bottom Bar Sync
   document.getElementById("progressFill").style.width = pct + "%";
   document.getElementById("currentTime").textContent = formatTime(current);
   document.getElementById("totalTime").textContent = formatTime(total);
 
-  // Inner Screen Sync
   document.getElementById("innerProgressFill").style.width = pct + "%";
   document.getElementById("innerCurrentTime").textContent = formatTime(current);
   document.getElementById("innerTotalTime").textContent = formatTime(total);
@@ -206,9 +208,9 @@ function toggleFavoriteAction(e) {
   const existsIndex = userFavorites.findIndex(t => t.id === track.id);
   
   if (existsIndex > -1) {
-    userFavorites.splice(existsIndex, 1); // Remove it
+    userFavorites.splice(existsIndex, 1);
   } else {
-    userFavorites.push(track); // Add it
+    userFavorites.push(track);
   }
   
   saveFavorites();
@@ -250,7 +252,6 @@ if (searchInput) {
       showSection("search");
       searchTimeout = setTimeout(() => searchYT(q), 500);
     } else if (!q) {
-      // FIX 1: Don't jump back to home. Just clear results.
       document.getElementById("searchResults").innerHTML = "";
     }
   });
@@ -260,7 +261,7 @@ if (searchClear) {
   searchClear.addEventListener("click", () => {
     searchInput.value = "";
     searchClear.classList.add("hidden");
-    searchInput.focus(); // FIX 1: Keeps keyboard open on mobile
+    searchInput.focus();
   });
 }
 
@@ -271,18 +272,15 @@ window.showSection = function(name) {
     if (el) el.classList.toggle("hidden", name !== sec);
   });
 
-  // Desktop active nav
   document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
   const navId = "nav" + name.charAt(0).toUpperCase() + name.slice(1);
   if (document.getElementById(navId)) document.getElementById(navId).classList.add("active");
 
-  // Mobile active nav
   document.querySelectorAll(".mobile-nav-btn").forEach(el => el.classList.remove("active"));
   const mNavId = "mobileNav" + name.charAt(0).toUpperCase() + name.slice(1);
   if (document.getElementById(mNavId)) document.getElementById(mNavId).classList.add("active");
 };
 
-// Nav clicks
 document.getElementById("navHome")?.addEventListener("click", () => showSection("home"));
 document.getElementById("navSearch")?.addEventListener("click", () => { showSection("search"); searchInput.focus(); });
 document.getElementById("navLibrary")?.addEventListener("click", () => showSection("library"));
@@ -332,18 +330,101 @@ window.playFromQueue = function(index) {
 };
 
 window.playFromFavorites = function(index) {
-  currentQueue = [...userFavorites]; // Load favorites into active queue
+  currentQueue = [...userFavorites]; 
   currentIndex = index;
   const track = currentQueue[index];
   playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
-// ─── INITIALIZATION ───────────────────────────────────────
+// ─── HOMEPAGE FEED LOADER (RESTORED) ──────────────────────
+async function loadFeed(query, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  try {
+    const data = await fetchFromBackendProxy(query);
+    const items = data.items || [];
+    if (items.length === 0) throw new Error("No items");
+
+    container._feedData = items.map((item) => ({
+      id: item.id.videoId,
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle,
+      thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+    }));
+
+  } catch (err) {
+    console.warn(`Feed ${containerId} failed, falling back to local matrix...`);
+    container._feedData = fallbackTracks;
+  }
+
+  container.innerHTML = container._feedData.map((track, i) => `
+    <div class="music-card" onclick="playFeedTrack('${containerId}', ${i})">
+      <img class="card-thumb" src="${track.thumb}" alt="" onerror="this.style.display='none'">
+      <div class="card-title">${escHtml(track.title)}</div>
+      <div class="card-sub">${escHtml(track.channel)}</div>
+      <button class="card-play" onclick="event.stopPropagation();playFeedTrack('${containerId}',${i})">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>
+  `).join("");
+}
+
+window.playFeedTrack = function(containerId, index) {
+  const container = document.getElementById(containerId);
+  if (!container || !container._feedData) return;
+  currentQueue = container._feedData;
+  currentIndex = index;
+  const track = currentQueue[index];
+  playVideo(track.id, track.title, track.channel, track.thumb);
+};
+
+// Quick Card Clicks Restored
+document.querySelectorAll(".quick-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const query = card.dataset.query;
+    if (searchInput) searchInput.value = query;
+    const searchClearBtn = document.getElementById("searchClear");
+    if (searchClearBtn) searchClearBtn.classList.remove("hidden");
+    showSection("search");
+    searchYT(query);
+  });
+});
+
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-document.addEventListener("DOMContentLoaded", () => {
+// ─── INITIALIZATION ───────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
   renderFavoritesList();
   loadYTApi();
+
+  // Sets the greeting based on time of day
+  const h = new Date().getHours();
+  let g = "Good Evening";
+  if (h < 12) g = "Good Morning";
+  else if (h < 17) g = "Good Afternoon";
+  const greetingEl = document.getElementById("greeting");
+  if (greetingEl) greetingEl.textContent = g;
   
-  // (You can still load your feed functions here like before, omitted for brevity)
+  // Safe fetch for the rows
+  try {
+    await Promise.all([
+      loadFeed("Top Hindi Songs", "madeForYou"),
+      loadFeed("Trending Music India", "trendingRow"),
+      loadFeed("Anime OST", "animeRow")
+    ]);
+  } catch (fatalCrash) {
+    console.error("Critical block caught! Loading fallbacks.", fatalCrash);
+    const mfy = document.getElementById("madeForYou");
+    if (mfy) {
+      mfy._feedData = fallbackTracks;
+      mfy.innerHTML = fallbackTracks.map((track, i) => `
+        <div class="music-card" onclick="playFeedTrack('madeForYou', ${i})">
+          <img class="card-thumb" src="${track.thumb}" alt="">
+          <div class="card-title">${escHtml(track.title)}</div>
+          <div class="card-sub">${escHtml(track.channel)}</div>
+        </div>
+      `).join("");
+    }
+  }
 });
