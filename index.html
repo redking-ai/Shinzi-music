@@ -128,7 +128,9 @@
         .inner-timeline { margin-bottom: 24px; }
         .inner-time-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sub); margin-top: 8px; }
         
-        .inner-controls { display: flex; justify-content: space-between; align-items: center; }
+        /* 🔥 THE SVG FIX 🔥 */
+        .inner-controls { display: flex; justify-content: space-between; align-items: center; padding: 0 8px; }
+        .inner-controls .media-action-btn { padding: 12px; } /* Makes buttons easier to tap on mobile */
         .inner-controls .media-action-btn svg { width: 24px; height: 24px; }
         .inner-play-btn { width: 64px; height: 64px; border-radius: 50%; background: #fff; color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .inner-play-btn svg { width: 28px; height: 28px; fill: #000; }
@@ -200,7 +202,7 @@
                 <div id="searchEmpty" class="status-msg-box hidden"><p>Type to look up media tracking.</p></div>
             </section>
 
-            <!-- LIBRARY VIEW (NEW) -->
+            <!-- LIBRARY VIEW -->
             <section id="librarySection" class="hidden">
                 <h1>Your Favorites</h1>
                 <div id="favoritesList" class="results-vertical-list"></div>
@@ -247,7 +249,7 @@
         </div>
     </footer>
 
-    <!-- MOBILE INNER SCREEN (NEW) -->
+    <!-- MOBILE INNER SCREEN (NOW HAS FULL UN-CHOPPED SVG ICONS) -->
     <div id="innerPlayerScreen" class="inner-player-screen">
         <div class="inner-header">
             <button id="closeInnerScreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -278,14 +280,15 @@
         </div>
 
         <div class="inner-controls">
-            <button id="innerShuffle" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5z"/></svg></button>
+            <!-- FULLY RESTORED ICONS -->
+            <button id="innerShuffle" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.12L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button>
             <button id="innerPrev" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
             <button id="innerPlayBtn" class="inner-play-btn">
                 <svg id="innerPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <svg id="innerPauseIcon" class="hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             </button>
-            <button id="innerNext" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12z"/></svg></button>
-            <button id="innerRepeat" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7z"/></svg></button>
+            <button id="innerNext" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+            <button id="innerRepeat" class="media-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v3h12v-6h-2v4z"/></svg></button>
         </div>
     </div>
 
