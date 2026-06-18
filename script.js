@@ -10,10 +10,10 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── FALLBACK DATA (Reverted to hqdefault to prevent gray boxes) ───
+// ─── FALLBACK DATA (Replaced Metamorphosis with a working thumbnail) ───
 const fallbackTracks = [
   { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
-  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
+  { id: "lz157kuOMC8", title: "Live Another Day", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/lz157kuOMC8/hqdefault.jpg" },
   { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
   { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
   { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
@@ -310,7 +310,6 @@ async function searchYT(query) {
     const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
     
-    // Still hunting for High-Res if available
     currentQueue = items.map((item) => ({
       id: item.id.videoId, 
       title: item.snippet.title, 
@@ -328,7 +327,6 @@ async function searchYT(query) {
     }
   } catch (err) {
     console.error("Search failed:", err);
-    // 🔥 VISUAL ERROR LOGGING ADDED HERE 🔥
     if (results) {
       results.innerHTML = `<div class="status-msg-box" style="color: #ff4444; font-weight: bold;">
         Backend connection failed. <br><br>
@@ -354,7 +352,7 @@ window.playFromFavorites = function(index) {
   playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
-// ─── FAST AF OPTIMISTIC FEED LOADER ───────────────────────
+// ─── SEQUENTIAL FEED LOADER (THE FIX) ───────────────────────
 function generateCardsHTML(containerId, tracks) {
   return tracks.map((track, i) => `
     <div class="music-card" onclick="playFeedTrack('${containerId}', ${i})">
@@ -368,14 +366,17 @@ function generateCardsHTML(containerId, tracks) {
   `).join("");
 }
 
-function loadFeed(query, containerId) {
+// Turned this into an async function so we can force them to load one-by-one
+async function loadFeed(query, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  // Render fallbacks instantly so the screen isn't blank
   container._feedData = fallbackTracks;
   container.innerHTML = generateCardsHTML(containerId, fallbackTracks);
 
-  fetchFromBackendProxy(query).then(data => {
+  try {
+    const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
     if (items.length > 0) {
       container._feedData = items.map((item) => ({
@@ -386,9 +387,9 @@ function loadFeed(query, containerId) {
       }));
       container.innerHTML = generateCardsHTML(containerId, container._feedData);
     }
-  }).catch(err => {
-    console.warn(`Render server asleep for ${containerId}, keeping local data on screen.`);
-  });
+  } catch (err) {
+    console.warn(`Render server asleep/busy for ${containerId}, keeping local data on screen.`);
+  }
 }
 
 window.playFeedTrack = function(containerId, index) {
@@ -414,8 +415,8 @@ document.querySelectorAll(".quick-card").forEach(card => {
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-// ─── INSTANT INITIALIZATION ───────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
+// ─── SEQUENTIAL INITIALIZATION ───────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
   const h = new Date().getHours();
   let g = "Good Evening";
   if (h < 12) g = "Good Morning";
@@ -426,7 +427,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderFavoritesList();
   loadYTApi();
 
-  loadFeed("Top Hindi Songs", "madeForYou");
-  loadFeed("Trending Music India", "trendingRow");
-  loadFeed("Anime OST", "animeRow");
+  // 🔥 THIS IS THE FIX: Await forces them to load ONE AT A TIME to stop server crashing
+  await loadFeed("Top Hindi Songs", "madeForYou");
+  await loadFeed("Trending Music India", "trendingRow");
+  await loadFeed("Anime OST", "animeRow");
 });
