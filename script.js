@@ -59,7 +59,10 @@ window.onYouTubeIframeAPIReady = function () {
     height: "1", width: "1",
     playerVars: { autoplay: 0, controls: 0 },
     events: {
-      onReady: () => { ytReady = true; },
+      onReady: () => { 
+        ytReady = true; 
+        ytPlayer.setVolume(100); // 🔥 FORCE MAX INTERNAL VOLUME ON LOAD
+      },
       onStateChange: onPlayerStateChange,
     },
   });
@@ -83,7 +86,10 @@ function onPlayerStateChange(e) {
 // ─── PLAY LOGIC ───────────────────────────────────────────
 function playVideo(videoId, title, channel, thumb) {
   if (!ytReady) { alert("Player loading, try again in a few seconds!"); return; }
+  
   ytPlayer.loadVideoById(videoId);
+  ytPlayer.setVolume(100); // 🔥 AGGRESSIVELY FORCE MAX VOLUME EVERY NEW SONG
+  
   updateNowPlaying(title, channel, thumb);
   isPlaying = true;
   updatePlayPauseBtn();
@@ -401,7 +407,6 @@ function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").
 
 // ─── INSTANT INITIALIZATION ───────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-  // Set Greeting instantly before anything else runs
   const h = new Date().getHours();
   let g = "Good Evening";
   if (h < 12) g = "Good Morning";
@@ -412,7 +417,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderFavoritesList();
   loadYTApi();
 
-  // Load feeds instantly in the background without freezing the screen
   loadFeed("Top Hindi Songs", "madeForYou");
   loadFeed("Trending Music India", "trendingRow");
   loadFeed("Anime OST", "animeRow");
