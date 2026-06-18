@@ -10,7 +10,7 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── FALLBACK DATA (For when the backend is asleep) ───────
+// ─── FALLBACK DATA (Instantly Loads) ──────────────────────
 const fallbackTracks = [
   { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
   { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
@@ -285,7 +285,7 @@ document.getElementById("navHome")?.addEventListener("click", () => showSection(
 document.getElementById("navSearch")?.addEventListener("click", () => { showSection("search"); searchInput.focus(); });
 document.getElementById("navLibrary")?.addEventListener("click", () => showSection("library"));
 
-// ─── FETCH & PLAY TRIGGERS ────────────────────────────────
+// ─── API FETCH HELPER ─────────────────────────────────────
 async function fetchFromBackendProxy(query) {
   const optimizedQuery = query + " official audio";
   const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(optimizedQuery)}`;
@@ -336,29 +336,9 @@ window.playFromFavorites = function(index) {
   playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
-// ─── HOMEPAGE FEED LOADER (RESTORED) ──────────────────────
-async function loadFeed(query, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  try {
-    const data = await fetchFromBackendProxy(query);
-    const items = data.items || [];
-    if (items.length === 0) throw new Error("No items");
-
-    container._feedData = items.map((item) => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      channel: item.snippet.channelTitle,
-      thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
-    }));
-
-  } catch (err) {
-    console.warn(`Feed ${containerId} failed, falling back to local matrix...`);
-    container._feedData = fallbackTracks;
-  }
-
-  container.innerHTML = container._feedData.map((track, i) => `
+// ─── FAST AF OPTIMISTIC FEED LOADER ───────────────────────
+function generateCardsHTML(containerId, tracks) {
+  return tracks.map((track, i) => `
     <div class="music-card" onclick="playFeedTrack('${containerId}', ${i})">
       <img class="card-thumb" src="${track.thumb}" alt="" onerror="this.style.display='none'">
       <div class="card-title">${escHtml(track.title)}</div>
@@ -370,6 +350,32 @@ async function loadFeed(query, containerId) {
   `).join("");
 }
 
+function loadFeed(query, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // 1. Instantly render fallback tracks so the UI doesn't freeze
+  container._feedData = fallbackTracks;
+  container.innerHTML = generateCardsHTML(containerId, fallbackTracks);
+
+  // 2. Secretly fetch real data in the background
+  fetchFromBackendProxy(query).then(data => {
+    const items = data.items || [];
+    if (items.length > 0) {
+      // 3. When the server finally wakes up, swap the offline music for real music
+      container._feedData = items.map((item) => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+      }));
+      container.innerHTML = generateCardsHTML(containerId, container._feedData);
+    }
+  }).catch(err => {
+    console.warn(`Render server asleep for ${containerId}, keeping local data on screen.`);
+  });
+}
+
 window.playFeedTrack = function(containerId, index) {
   const container = document.getElementById(containerId);
   if (!container || !container._feedData) return;
@@ -379,7 +385,7 @@ window.playFeedTrack = function(containerId, index) {
   playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
-// Quick Card Clicks Restored
+// Quick Card Clicks
 document.querySelectorAll(".quick-card").forEach(card => {
   card.addEventListener("click", () => {
     const query = card.dataset.query;
@@ -393,38 +399,21 @@ document.querySelectorAll(".quick-card").forEach(card => {
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-// ─── INITIALIZATION ───────────────────────────────────────
-document.addEventListener("DOMContentLoaded", async () => {
-  renderFavoritesList();
-  loadYTApi();
-
-  // Sets the greeting based on time of day
+// ─── INSTANT INITIALIZATION ───────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  // Set Greeting instantly before anything else runs
   const h = new Date().getHours();
   let g = "Good Evening";
   if (h < 12) g = "Good Morning";
   else if (h < 17) g = "Good Afternoon";
   const greetingEl = document.getElementById("greeting");
   if (greetingEl) greetingEl.textContent = g;
-  
-  // Safe fetch for the rows
-  try {
-    await Promise.all([
-      loadFeed("Top Hindi Songs", "madeForYou"),
-      loadFeed("Trending Music India", "trendingRow"),
-      loadFeed("Anime OST", "animeRow")
-    ]);
-  } catch (fatalCrash) {
-    console.error("Critical block caught! Loading fallbacks.", fatalCrash);
-    const mfy = document.getElementById("madeForYou");
-    if (mfy) {
-      mfy._feedData = fallbackTracks;
-      mfy.innerHTML = fallbackTracks.map((track, i) => `
-        <div class="music-card" onclick="playFeedTrack('madeForYou', ${i})">
-          <img class="card-thumb" src="${track.thumb}" alt="">
-          <div class="card-title">${escHtml(track.title)}</div>
-          <div class="card-sub">${escHtml(track.channel)}</div>
-        </div>
-      `).join("");
-    }
-  }
+
+  renderFavoritesList();
+  loadYTApi();
+
+  // Load feeds instantly in the background without freezing the screen
+  loadFeed("Top Hindi Songs", "madeForYou");
+  loadFeed("Trending Music India", "trendingRow");
+  loadFeed("Anime OST", "animeRow");
 });
