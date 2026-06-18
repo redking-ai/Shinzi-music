@@ -10,13 +10,13 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── FALLBACK DATA (Instantly Loads) ──────────────────────
+// ─── FALLBACK DATA (Reverted to hqdefault to prevent gray boxes) ───
 const fallbackTracks = [
-  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/maxresdefault.jpg" },
-  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/maxresdefault.jpg" },
-  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/maxresdefault.jpg" },
-  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/maxresdefault.jpg" },
-  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/maxresdefault.jpg" }
+  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
+  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
+  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
+  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
+  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
 ];
 
 // ─── FAVORITES DATABASE ───────────────────────────────────
@@ -310,7 +310,7 @@ async function searchYT(query) {
     const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
     
-    // 🔥 HIGH-RES THUMBNAIL LOGIC
+    // Still hunting for High-Res if available
     currentQueue = items.map((item) => ({
       id: item.id.videoId, 
       title: item.snippet.title, 
@@ -327,7 +327,15 @@ async function searchYT(query) {
       `).join("");
     }
   } catch (err) {
-    console.error("Search failed");
+    console.error("Search failed:", err);
+    // 🔥 VISUAL ERROR LOGGING ADDED HERE 🔥
+    if (results) {
+      results.innerHTML = `<div class="status-msg-box" style="color: #ff4444; font-weight: bold;">
+        Backend connection failed. <br><br>
+        1. Render server might be asleep (Wait 60s and try again). <br>
+        2. YouTube API daily limit reached.
+      </div>`;
+    }
   } finally {
     if (loading) loading.classList.add("hidden");
   }
@@ -370,7 +378,6 @@ function loadFeed(query, containerId) {
   fetchFromBackendProxy(query).then(data => {
     const items = data.items || [];
     if (items.length > 0) {
-      // 🔥 HIGH-RES THUMBNAIL LOGIC
       container._feedData = items.map((item) => ({
         id: item.id.videoId,
         title: item.snippet.title,
