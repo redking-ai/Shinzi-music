@@ -10,15 +10,6 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── FALLBACK DATA (Replaced Metamorphosis with a working thumbnail) ───
-const fallbackTracks = [
-  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
-  { id: "lz157kuOMC8", title: "Live Another Day", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/lz157kuOMC8/hqdefault.jpg" },
-  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
-  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
-  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
-];
-
 // ─── FAVORITES DATABASE ───────────────────────────────────
 let userFavorites = JSON.parse(localStorage.getItem('shinzi_favorites')) || [];
 
@@ -30,12 +21,12 @@ function saveFavorites() {
 function renderFavoritesList() {
   const container = document.getElementById("favoritesList");
   if (!container) return;
-  
+
   if (userFavorites.length === 0) {
     container.innerHTML = `<div class="status-msg-box">No favorites yet. Tap the heart to save songs!</div>`;
     return;
   }
-  
+
   container.innerHTML = userFavorites.map((track, i) => `
     <div class="search-item" onclick="playFromFavorites(${i})">
       <img class="search-thumb" src="${track.thumb}" alt="">
@@ -86,10 +77,10 @@ function onPlayerStateChange(e) {
 // ─── PLAY LOGIC ───────────────────────────────────────────
 function playVideo(videoId, title, channel, thumb) {
   if (!ytReady) { alert("Player loading, try again in a few seconds!"); return; }
-  
+
   ytPlayer.loadVideoById(videoId);
   ytPlayer.setVolume(100); 
-  
+
   updateNowPlaying(title, channel, thumb);
   isPlaying = true;
   updatePlayPauseBtn();
@@ -110,7 +101,6 @@ function updateNowPlaying(title, channel, thumb) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: title || "Unknown Track",
       artist: channel || "Shinzi Music",
-      album: "Shinzi Premium",
       artwork: [{ src: highResThumb, sizes: '512x512', type: 'image/jpeg' }]
     });
     navigator.mediaSession.setActionHandler('play', togglePlayPause);
@@ -129,10 +119,10 @@ function togglePlayPause() {
 function updatePlayPauseBtn() {
   document.getElementById("playIcon").classList.toggle("hidden", isPlaying);
   document.getElementById("pauseIcon").classList.toggle("hidden", !isPlaying);
-  
+
   document.getElementById("innerPlayIcon").classList.toggle("hidden", isPlaying);
   document.getElementById("innerPauseIcon").classList.toggle("hidden", !isPlaying);
-  
+
   const mobilePlay = document.getElementById("mobilePlayBtn");
   if(mobilePlay) {
     mobilePlay.innerHTML = isPlaying 
@@ -209,16 +199,16 @@ function formatTime(sec) {
 function toggleFavoriteAction(e) {
   e.stopPropagation();
   if (currentIndex === -1) return;
-  
+
   const track = currentQueue[currentIndex];
   const existsIndex = userFavorites.findIndex(t => t.id === track.id);
-  
+
   if (existsIndex > -1) {
     userFavorites.splice(existsIndex, 1);
   } else {
     userFavorites.push(track);
   }
-  
+
   saveFavorites();
   checkIfFavorite();
 }
@@ -227,7 +217,7 @@ function checkIfFavorite() {
   if (currentIndex === -1) return;
   const track = currentQueue[currentIndex];
   const isFav = userFavorites.some(t => t.id === track.id);
-  
+
   document.getElementById("npHeart").classList.toggle("liked", isFav);
   document.getElementById("innerHeart").classList.toggle("liked", isFav);
 }
@@ -303,13 +293,15 @@ async function fetchFromBackendProxy(query) {
 async function searchYT(query) {
   const loading = document.getElementById("searchLoading");
   const results = document.getElementById("searchResults");
+  
+  // 🔄 FIX: If not loading then do loading...
   if (loading) loading.classList.remove("hidden");
-  if (results) results.innerHTML = "";
+  if (results) results.innerHTML = `<div class="status-msg-box">Searching tracks...</div>`;
 
   try {
     const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
-    
+
     currentQueue = items.map((item) => ({
       id: item.id.videoId, 
       title: item.snippet.title, 
@@ -317,21 +309,28 @@ async function searchYT(query) {
       thumb: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
     }));
 
+    // 🔄 FIX: When loaded, do normal layout
     if (results) {
-      results.innerHTML = currentQueue.map((track, i) => `
-        <div class="search-item" onclick="playFromQueue(${i})">
-          <img class="search-thumb" src="${track.thumb}" alt="">
-          <div class="search-info"><div class="search-title">${escHtml(track.title)}</div><div class="search-channel">${escHtml(track.channel)}</div></div>
-        </div>
-      `).join("");
+      if (currentQueue.length === 0) {
+        results.innerHTML = `<div class="status-msg-box">No results found.</div>`;
+      } else {
+        results.innerHTML = currentQueue.map((track, i) => `
+          <div class="search-item" onclick="playFromQueue(${i})">
+            <img class="search-thumb" src="${track.thumb}" alt="">
+            <div class="search-info">
+                <div class="search-title">${escHtml(track.title)}</div>
+                <div class="search-channel">${escHtml(track.channel)}</div>
+            </div>
+          </div>
+        `).join("");
+      }
     }
   } catch (err) {
     console.error("Search failed:", err);
     if (results) {
       results.innerHTML = `<div class="status-msg-box" style="color: #ff4444; font-weight: bold;">
         Backend connection failed. <br><br>
-        1. Render server might be asleep (Wait 60s and try again). <br>
-        2. YouTube API daily limit reached.
+        Please check your network or try again shortly.
       </div>`;
     }
   } finally {
@@ -352,55 +351,6 @@ window.playFromFavorites = function(index) {
   playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
-// ─── SEQUENTIAL FEED LOADER (THE FIX) ───────────────────────
-function generateCardsHTML(containerId, tracks) {
-  return tracks.map((track, i) => `
-    <div class="music-card" onclick="playFeedTrack('${containerId}', ${i})">
-      <img class="card-thumb" src="${track.thumb}" alt="" onerror="this.style.display='none'">
-      <div class="card-title">${escHtml(track.title)}</div>
-      <div class="card-sub">${escHtml(track.channel)}</div>
-      <button class="card-play" onclick="event.stopPropagation();playFeedTrack('${containerId}',${i})">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-    </div>
-  `).join("");
-}
-
-// Turned this into an async function so we can force them to load one-by-one
-async function loadFeed(query, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  // Render fallbacks instantly so the screen isn't blank
-  container._feedData = fallbackTracks;
-  container.innerHTML = generateCardsHTML(containerId, fallbackTracks);
-
-  try {
-    const data = await fetchFromBackendProxy(query);
-    const items = data.items || [];
-    if (items.length > 0) {
-      container._feedData = items.map((item) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        channel: item.snippet.channelTitle,
-        thumb: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
-      }));
-      container.innerHTML = generateCardsHTML(containerId, container._feedData);
-    }
-  } catch (err) {
-    console.warn(`Render server asleep/busy for ${containerId}, keeping local data on screen.`);
-  }
-}
-
-window.playFeedTrack = function(containerId, index) {
-  const container = document.getElementById(containerId);
-  if (!container || !container._feedData) return;
-  currentQueue = container._feedData;
-  currentIndex = index;
-  const track = currentQueue[index];
-  playVideo(track.id, track.title, track.channel, track.thumb);
-};
-
 // Quick Card Clicks
 document.querySelectorAll(".quick-card").forEach(card => {
   card.addEventListener("click", () => {
@@ -415,8 +365,8 @@ document.querySelectorAll(".quick-card").forEach(card => {
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-// ─── SEQUENTIAL INITIALIZATION ───────────────────────────────
-document.addEventListener("DOMContentLoaded", async () => {
+// ─── INITIALIZATION ───────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
   const h = new Date().getHours();
   let g = "Good Evening";
   if (h < 12) g = "Good Morning";
@@ -426,9 +376,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   renderFavoritesList();
   loadYTApi();
-
-  // 🔥 THIS IS THE FIX: Await forces them to load ONE AT A TIME to stop server crashing
-  await loadFeed("Top Hindi Songs", "madeForYou");
-  await loadFeed("Trending Music India", "trendingRow");
-  await loadFeed("Anime OST", "animeRow");
+  
+  // 🗑️ FIX: Completely deleted the old auto-suggest loadFeed calls to maximize speed and remove unwanted rows.
 });
