@@ -12,11 +12,11 @@ let progressInterval = null;
 
 // ─── FALLBACK DATA (Instantly Loads) ──────────────────────
 const fallbackTracks = [
-  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
-  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
-  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" },
-  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
-  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" }
+  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/maxresdefault.jpg" },
+  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/maxresdefault.jpg" },
+  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/maxresdefault.jpg" },
+  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/maxresdefault.jpg" },
+  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/maxresdefault.jpg" }
 ];
 
 // ─── FAVORITES DATABASE ───────────────────────────────────
@@ -61,7 +61,7 @@ window.onYouTubeIframeAPIReady = function () {
     events: {
       onReady: () => { 
         ytReady = true; 
-        ytPlayer.setVolume(100); // 🔥 FORCE MAX INTERNAL VOLUME ON LOAD
+        ytPlayer.setVolume(100); 
       },
       onStateChange: onPlayerStateChange,
     },
@@ -88,7 +88,7 @@ function playVideo(videoId, title, channel, thumb) {
   if (!ytReady) { alert("Player loading, try again in a few seconds!"); return; }
   
   ytPlayer.loadVideoById(videoId);
-  ytPlayer.setVolume(100); // 🔥 AGGRESSIVELY FORCE MAX VOLUME EVERY NEW SONG
+  ytPlayer.setVolume(100); 
   
   updateNowPlaying(title, channel, thumb);
   isPlaying = true;
@@ -309,9 +309,13 @@ async function searchYT(query) {
   try {
     const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
+    
+    // 🔥 HIGH-RES THUMBNAIL LOGIC
     currentQueue = items.map((item) => ({
-      id: item.id.videoId, title: item.snippet.title, channel: item.snippet.channelTitle,
-      thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+      id: item.id.videoId, 
+      title: item.snippet.title, 
+      channel: item.snippet.channelTitle,
+      thumb: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
     }));
 
     if (results) {
@@ -360,20 +364,18 @@ function loadFeed(query, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  // 1. Instantly render fallback tracks so the UI doesn't freeze
   container._feedData = fallbackTracks;
   container.innerHTML = generateCardsHTML(containerId, fallbackTracks);
 
-  // 2. Secretly fetch real data in the background
   fetchFromBackendProxy(query).then(data => {
     const items = data.items || [];
     if (items.length > 0) {
-      // 3. When the server finally wakes up, swap the offline music for real music
+      // 🔥 HIGH-RES THUMBNAIL LOGIC
       container._feedData = items.map((item) => ({
         id: item.id.videoId,
         title: item.snippet.title,
         channel: item.snippet.channelTitle,
-        thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+        thumb: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
       }));
       container.innerHTML = generateCardsHTML(containerId, container._feedData);
     }
