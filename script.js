@@ -6,27 +6,37 @@ let ytReady = false;
 let currentQueue = [];
 let currentIndex = -1;
 let isPlaying = false;
-let isShuffle = false;
-let isRepeat = false;
 let progressInterval = null;
+
+// ─── INSTANT LOCAL CACHE (Fixes Blank Home Screen) ────────
+const initialDataForYou = [
+  { id: "M0nSj1teGz8", title: "Aarambh Hai Prachand", channel: "Piyush Mishra", thumb: "https://i.ytimg.com/vi/M0nSj1teGz8/hqdefault.jpg" },
+  { id: "S19UcWdOA-I", title: "METAMORPHOSIS (Sped Up)", channel: "INTERWORLD", thumb: "https://i.ytimg.com/vi/S19UcWdOA-I/hqdefault.jpg" },
+  { id: "cb1XkE2xT0A", title: "Arjan Vailly", channel: "Bhupinder Babbal", thumb: "https://i.ytimg.com/vi/cb1XkE2xT0A/hqdefault.jpg" }
+];
+
+const initialDataTrending = [
+  { id: "lz157kuOMC8", title: "Live Another Day", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/lz157kuOMC8/hqdefault.jpg" },
+  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg" },
+  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://i.ytimg.com/vi/w-sQRS-Lc9k/hqdefault.jpg" }
+];
+
+const initialDataAnime = [
+  { id: "UxxajLWwzqY", title: "SPECIALZ (Jujutsu Kaisen)", channel: "King Gnu", thumb: "https://i.ytimg.com/vi/UxxajLWwzqY/hqdefault.jpg" },
+  { id: "7aMOurgDB-o", title: "Unravel (Tokyo Ghoul)", channel: "TK", thumb: "https://i.ytimg.com/vi/7aMOurgDB-o/hqdefault.jpg" },
+  { id: "Gq3jIqG8aMo", title: "Kick Back (Chainsaw Man)", channel: "Kenshi Yonezu", thumb: "https://i.ytimg.com/vi/Gq3jIqG8aMo/hqdefault.jpg" }
+];
 
 // ─── FAVORITES DATABASE ───────────────────────────────────
 let userFavorites = JSON.parse(localStorage.getItem('shinzi_favorites')) || [];
 
-function saveFavorites() {
-  localStorage.setItem('shinzi_favorites', JSON.stringify(userFavorites));
-  renderFavoritesList();
-}
-
 function renderFavoritesList() {
   const container = document.getElementById("favoritesList");
   if (!container) return;
-
   if (userFavorites.length === 0) {
-    container.innerHTML = `<div class="status-msg-box">No favorites yet. Tap the heart to save songs!</div>`;
+    container.innerHTML = `<div style="color:#a7a7a7; padding: 20px;">No favorites yet.</div>`;
     return;
   }
-
   container.innerHTML = userFavorites.map((track, i) => `
     <div class="search-item" onclick="playFromFavorites(${i})">
       <img class="search-thumb" src="${track.thumb}" alt="">
@@ -50,10 +60,7 @@ window.onYouTubeIframeAPIReady = function () {
     height: "1", width: "1",
     playerVars: { autoplay: 0, controls: 0 },
     events: {
-      onReady: () => { 
-        ytReady = true; 
-        ytPlayer.setVolume(100); 
-      },
+      onReady: () => { ytReady = true; ytPlayer.setVolume(100); },
       onStateChange: onPlayerStateChange,
     },
   });
@@ -61,30 +68,21 @@ window.onYouTubeIframeAPIReady = function () {
 
 function onPlayerStateChange(e) {
   if (e.data === YT.PlayerState.PLAYING) {
-    isPlaying = true;
-    updatePlayPauseBtn();
-    startProgressUpdate();
+    isPlaying = true; updatePlayPauseBtn(); startProgressUpdate();
   } else if (e.data === YT.PlayerState.PAUSED) {
-    isPlaying = false;
-    updatePlayPauseBtn();
-    stopProgressUpdate();
+    isPlaying = false; updatePlayPauseBtn(); stopProgressUpdate();
   } else if (e.data === YT.PlayerState.ENDED) {
-    if (isRepeat) { ytPlayer.seekTo(0); ytPlayer.playVideo(); } 
-    else { playNext(); }
+    playNext();
   }
 }
 
 // ─── PLAY LOGIC ───────────────────────────────────────────
 function playVideo(videoId, title, channel, thumb) {
-  if (!ytReady) { alert("Player loading, try again in a few seconds!"); return; }
-
+  if (!ytReady) { alert("Player loading, try again in 2 seconds!"); return; }
   ytPlayer.loadVideoById(videoId);
-  ytPlayer.setVolume(100); 
-
   updateNowPlaying(title, channel, thumb);
   isPlaying = true;
   updatePlayPauseBtn();
-  checkIfFavorite();
 }
 
 function updateNowPlaying(title, channel, thumb) {
@@ -92,22 +90,6 @@ function updateNowPlaying(title, channel, thumb) {
   document.getElementById("npArtist").textContent = channel || "Shinzi Music";
   const highResThumb = thumb || "https://i.ytimg.com/vi/default/hqdefault.jpg";
   document.getElementById("npThumb").innerHTML = `<img src="${highResThumb}" alt="thumb">`;
-
-  document.getElementById("innerTitle").textContent = title || "Unknown";
-  document.getElementById("innerArtist").textContent = channel || "Shinzi Music";
-  document.getElementById("innerThumbImg").src = highResThumb;
-
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: title || "Unknown Track",
-      artist: channel || "Shinzi Music",
-      artwork: [{ src: highResThumb, sizes: '512x512', type: 'image/jpeg' }]
-    });
-    navigator.mediaSession.setActionHandler('play', togglePlayPause);
-    navigator.mediaSession.setActionHandler('pause', togglePlayPause);
-    navigator.mediaSession.setActionHandler('previoustrack', playPrev);
-    navigator.mediaSession.setActionHandler('nexttrack', playNext);
-  }
 }
 
 function togglePlayPause() {
@@ -119,32 +101,22 @@ function togglePlayPause() {
 function updatePlayPauseBtn() {
   document.getElementById("playIcon").classList.toggle("hidden", isPlaying);
   document.getElementById("pauseIcon").classList.toggle("hidden", !isPlaying);
-
-  document.getElementById("innerPlayIcon").classList.toggle("hidden", isPlaying);
-  document.getElementById("innerPauseIcon").classList.toggle("hidden", !isPlaying);
-
   const mobilePlay = document.getElementById("mobilePlayBtn");
   if(mobilePlay) {
     mobilePlay.innerHTML = isPlaying 
-      ? `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` 
-      : `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+      ? `<svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` 
+      : `<svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>`;
   }
 }
 
-// ─── CONTROLS WIRING ──────────────────────────────────────
 document.getElementById("btnPlayPause").addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
-document.getElementById("innerPlayBtn").addEventListener("click", togglePlayPause);
 document.getElementById("mobilePlayBtn")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
-
 document.getElementById("btnNext").addEventListener("click", (e) => { e.stopPropagation(); playNext(); });
-document.getElementById("innerNext").addEventListener("click", playNext);
-
 document.getElementById("btnPrev").addEventListener("click", (e) => { e.stopPropagation(); playPrev(); });
-document.getElementById("innerPrev").addEventListener("click", playPrev);
 
 function playNext() {
   if (currentQueue.length === 0) return;
-  currentIndex = isShuffle ? Math.floor(Math.random() * currentQueue.length) : (currentIndex + 1) % currentQueue.length;
+  currentIndex = (currentIndex + 1) % currentQueue.length;
   const track = currentQueue[currentIndex];
   playVideo(track.id, track.title, track.channel, track.thumb);
 }
@@ -157,10 +129,7 @@ function playPrev() {
 }
 
 // ─── PROGRESS BAR SYNC ────────────────────────────────────
-function startProgressUpdate() {
-  stopProgressUpdate();
-  progressInterval = setInterval(updateProgress, 500);
-}
+function startProgressUpdate() { stopProgressUpdate(); progressInterval = setInterval(updateProgress, 500); }
 function stopProgressUpdate() { if (progressInterval) clearInterval(progressInterval); }
 
 function updateProgress() {
@@ -168,26 +137,17 @@ function updateProgress() {
   const current = ytPlayer.getCurrentTime() || 0;
   const total = ytPlayer.getDuration() || 0;
   const pct = total > 0 ? (current / total) * 100 : 0;
-
   document.getElementById("progressFill").style.width = pct + "%";
   document.getElementById("currentTime").textContent = formatTime(current);
   document.getElementById("totalTime").textContent = formatTime(total);
-
-  document.getElementById("innerProgressFill").style.width = pct + "%";
-  document.getElementById("innerCurrentTime").textContent = formatTime(current);
-  document.getElementById("innerTotalTime").textContent = formatTime(total);
 }
 
-document.getElementById("progressBar").addEventListener("click", seekAudio);
-document.getElementById("innerProgressBar").addEventListener("click", seekAudio);
-
-function seekAudio(e) {
+document.getElementById("progressBar").addEventListener("click", function(e) {
   if (!ytReady) return;
-  const bar = e.currentTarget;
-  const pct = e.offsetX / bar.offsetWidth;
+  const pct = e.offsetX / this.offsetWidth;
   const total = ytPlayer.getDuration() || 0;
   ytPlayer.seekTo(pct * total, true);
-}
+});
 
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
@@ -195,57 +155,15 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
-// ─── HEART & FAVORITE WIRING ──────────────────────────────
-function toggleFavoriteAction(e) {
-  e.stopPropagation();
-  if (currentIndex === -1) return;
-
-  const track = currentQueue[currentIndex];
-  const existsIndex = userFavorites.findIndex(t => t.id === track.id);
-
-  if (existsIndex > -1) {
-    userFavorites.splice(existsIndex, 1);
-  } else {
-    userFavorites.push(track);
-  }
-
-  saveFavorites();
-  checkIfFavorite();
-}
-
-function checkIfFavorite() {
-  if (currentIndex === -1) return;
-  const track = currentQueue[currentIndex];
-  const isFav = userFavorites.some(t => t.id === track.id);
-
-  document.getElementById("npHeart").classList.toggle("liked", isFav);
-  document.getElementById("innerHeart").classList.toggle("liked", isFav);
-}
-
-document.getElementById("npHeart").addEventListener("click", toggleFavoriteAction);
-document.getElementById("innerHeart").addEventListener("click", toggleFavoriteAction);
-
-// ─── INNER SCREEN SLIDE LOGIC ─────────────────────────────
-document.getElementById("mainPlayerBar").addEventListener("click", () => {
-    document.getElementById("innerPlayerScreen").classList.add("active");
-});
-document.getElementById("closeInnerScreen").addEventListener("click", (e) => {
-    e.stopPropagation();
-    document.getElementById("innerPlayerScreen").classList.remove("active");
-});
-
 // ─── SEARCH & UI LOGIC ────────────────────────────────────
 const searchInput = document.getElementById("searchInput");
-const searchClear = document.getElementById("searchClear");
 let searchTimeout = null;
 
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
     const q = e.target.value.trim();
-    searchClear.classList.toggle("hidden", !q);
     clearTimeout(searchTimeout);
     if (q.length > 1) {
-      showSection("search");
       searchTimeout = setTimeout(() => searchYT(q), 500);
     } else if (!q) {
       document.getElementById("searchResults").innerHTML = "";
@@ -253,129 +171,89 @@ if (searchInput) {
   });
 }
 
-if (searchClear) {
-  searchClear.addEventListener("click", () => {
-    searchInput.value = "";
-    searchClear.classList.add("hidden");
-    searchInput.focus();
-  });
-}
-
 window.showSection = function(name) {
-  const sections = ["home", "search", "library"];
-  sections.forEach(sec => {
-    const el = document.getElementById(sec + "Section");
-    if (el) el.classList.toggle("hidden", name !== sec);
+  ["home", "search", "library"].forEach(sec => {
+    document.getElementById(sec + "Section").classList.toggle("hidden", name !== sec);
   });
-
-  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
-  const navId = "nav" + name.charAt(0).toUpperCase() + name.slice(1);
-  if (document.getElementById(navId)) document.getElementById(navId).classList.add("active");
-
-  document.querySelectorAll(".mobile-nav-btn").forEach(el => el.classList.remove("active"));
-  const mNavId = "mobileNav" + name.charAt(0).toUpperCase() + name.slice(1);
-  if (document.getElementById(mNavId)) document.getElementById(mNavId).classList.add("active");
+  document.querySelectorAll(".nav-item, .mobile-nav-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById("nav" + name.charAt(0).toUpperCase() + name.slice(1))?.classList.add("active");
+  document.getElementById("mobileNav" + name.charAt(0).toUpperCase() + name.slice(1))?.classList.add("active");
 };
 
-document.getElementById("navHome")?.addEventListener("click", () => showSection("home"));
-document.getElementById("navSearch")?.addEventListener("click", () => { showSection("search"); searchInput.focus(); });
-document.getElementById("navLibrary")?.addEventListener("click", () => showSection("library"));
-
-// ─── API FETCH HELPER ─────────────────────────────────────
-async function fetchFromBackendProxy(query) {
-  const optimizedQuery = query + " official audio";
-  const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(optimizedQuery)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Backend error");
-  return await res.json();
-}
-
 async function searchYT(query) {
-  const loading = document.getElementById("searchLoading");
   const results = document.getElementById("searchResults");
-  
-  // 🔄 FIX: If not loading then do loading...
-  if (loading) loading.classList.remove("hidden");
-  if (results) results.innerHTML = `<div class="status-msg-box">Searching tracks...</div>`;
+  results.innerHTML = `<div style="color:#a7a7a7; padding: 20px;">Searching tracks...</div>`;
 
   try {
-    const data = await fetchFromBackendProxy(query);
+    const res = await fetch(`${BACKEND_SEARCH_URL}?q=${encodeURIComponent(query + " official audio")}`);
+    const data = await res.json();
     const items = data.items || [];
 
     currentQueue = items.map((item) => ({
       id: item.id.videoId, 
       title: item.snippet.title, 
       channel: item.snippet.channelTitle,
-      thumb: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+      thumb: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url || "",
     }));
 
-    // 🔄 FIX: When loaded, do normal layout
-    if (results) {
-      if (currentQueue.length === 0) {
-        results.innerHTML = `<div class="status-msg-box">No results found.</div>`;
-      } else {
-        results.innerHTML = currentQueue.map((track, i) => `
-          <div class="search-item" onclick="playFromQueue(${i})">
-            <img class="search-thumb" src="${track.thumb}" alt="">
-            <div class="search-info">
-                <div class="search-title">${escHtml(track.title)}</div>
-                <div class="search-channel">${escHtml(track.channel)}</div>
-            </div>
+    if (currentQueue.length === 0) {
+      results.innerHTML = `<div style="color:#a7a7a7; padding: 20px;">No results found.</div>`;
+    } else {
+      results.innerHTML = currentQueue.map((track, i) => `
+        <div class="search-item" onclick="playFromQueue(${i})">
+          <img class="search-thumb" src="${track.thumb}" alt="">
+          <div class="search-info">
+              <div class="search-title">${escHtml(track.title)}</div>
+              <div class="search-channel">${escHtml(track.channel)}</div>
           </div>
-        `).join("");
-      }
+        </div>
+      `).join("");
     }
   } catch (err) {
-    console.error("Search failed:", err);
-    if (results) {
-      results.innerHTML = `<div class="status-msg-box" style="color: #ff4444; font-weight: bold;">
-        Backend connection failed. <br><br>
-        Please check your network or try again shortly.
-      </div>`;
-    }
-  } finally {
-    if (loading) loading.classList.add("hidden");
+    results.innerHTML = `<div style="color: #ff4444; padding: 20px;">Connection failed. Try again.</div>`;
   }
 }
 
 window.playFromQueue = function(index) {
   currentIndex = index;
-  const track = currentQueue[index];
-  playVideo(track.id, track.title, track.channel, track.thumb);
+  playVideo(currentQueue[index].id, currentQueue[index].title, currentQueue[index].channel, currentQueue[index].thumb);
 };
 
-window.playFromFavorites = function(index) {
-  currentQueue = [...userFavorites]; 
+// ─── INSTANT RENDER UI FUNCTION ────────────────────────────
+function generateCardsHTML(tracks, queueName) {
+  return tracks.map((track, i) => `
+    <div class="music-card" onclick="playStatic('${queueName}', ${i})">
+      <img class="card-thumb" src="${track.thumb}" alt="">
+      <div class="card-title">${escHtml(track.title)}</div>
+      <div class="card-sub">${escHtml(track.channel)}</div>
+      <button class="card-play" onclick="event.stopPropagation(); playStatic('${queueName}', ${i})">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>
+  `).join("");
+}
+
+// Logic to play the hardcoded home screen arrays
+window.playStatic = function(queueName, index) {
+  if (queueName === 'madeForYou') currentQueue = initialDataForYou;
+  if (queueName === 'trendingRow') currentQueue = initialDataTrending;
+  if (queueName === 'animeRow') currentQueue = initialDataAnime;
   currentIndex = index;
-  const track = currentQueue[index];
-  playVideo(track.id, track.title, track.channel, track.thumb);
-};
-
-// Quick Card Clicks
-document.querySelectorAll(".quick-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const query = card.dataset.query;
-    if (searchInput) searchInput.value = query;
-    const searchClearBtn = document.getElementById("searchClear");
-    if (searchClearBtn) searchClearBtn.classList.remove("hidden");
-    showSection("search");
-    searchYT(query);
-  });
-});
+  playVideo(currentQueue[index].id, currentQueue[index].title, currentQueue[index].channel, currentQueue[index].thumb);
+}
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-// ─── INITIALIZATION ───────────────────────────────────────────
+// ─── INITIALIZATION ────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   const h = new Date().getHours();
-  let g = "Good Evening";
-  if (h < 12) g = "Good Morning";
-  else if (h < 17) g = "Good Afternoon";
-  const greetingEl = document.getElementById("greeting");
-  if (greetingEl) greetingEl.textContent = g;
+  document.getElementById("greeting").textContent = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+
+  // INSTANTLY render home screen rows. Zero delay.
+  document.getElementById("madeForYou").innerHTML = generateCardsHTML(initialDataForYou, 'madeForYou');
+  document.getElementById("trendingRow").innerHTML = generateCardsHTML(initialDataTrending, 'trendingRow');
+  document.getElementById("animeRow").innerHTML = generateCardsHTML(initialDataAnime, 'animeRow');
 
   renderFavoritesList();
   loadYTApi();
-  
-  // 🗑️ FIX: Completely deleted the old auto-suggest loadFeed calls to maximize speed and remove unwanted rows.
 });
