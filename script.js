@@ -10,6 +10,15 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
+// ─── FALLBACK DATA (Safe fallback links that never show gray boxes) ───
+const fallbackTracks = [
+  { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://img.youtube.com/vi/UxxajLWwzqY/0.jpg" },
+  { id: "lz157kuOMC8", title: "Live Another Day", channel: "KORDHELL", thumb: "https://img.youtube.com/vi/lz157kuOMC8/0.jpg" },
+  { id: "w-sQRS-Lc9k", title: "Murder In My Mind", channel: "KORDHELL", thumb: "https://img.youtube.com/vi/w-sQRS-Lc9k/0.jpg" },
+  { id: "60ItHLz5WEA", title: "Faded", channel: "Alan Walker", thumb: "https://img.youtube.com/vi/60ItHLz5WEA/0.jpg" },
+  { id: "7aMOurgDB-o", title: "Tokyo Ghoul - Unravel", channel: "Anime Vibes", thumb: "https://img.youtube.com/vi/7aMOurgDB-o/0.jpg" }
+];
+
 // ─── FAVORITES DATABASE ───────────────────────────────────
 let userFavorites = JSON.parse(localStorage.getItem('shinzi_favorites')) || [];
 
@@ -90,7 +99,7 @@ function playVideo(videoId, title, channel, thumb) {
 function updateNowPlaying(title, channel, thumb) {
   document.getElementById("npTitle").textContent = title || "Unknown";
   document.getElementById("npArtist").textContent = channel || "Shinzi Music";
-  const highResThumb = thumb || "https://i.ytimg.com/vi/default/hqdefault.jpg";
+  const highResThumb = thumb || "https://img.youtube.com/vi/default/0.jpg";
   document.getElementById("npThumb").innerHTML = `<img src="${highResThumb}" alt="thumb">`;
 
   document.getElementById("innerTitle").textContent = title || "Unknown";
@@ -116,12 +125,13 @@ function togglePlayPause() {
   else ytPlayer.playVideo();
 }
 
+// ─── UI BUTTON UPDATES ───
 function updatePlayPauseBtn() {
   document.getElementById("playIcon").classList.toggle("hidden", isPlaying);
   document.getElementById("pauseIcon").classList.toggle("hidden", !isPlaying);
 
-  document.getElementById("innerPlayIcon").classList.toggle("hidden", isPlaying);
-  document.getElementById("innerPauseIcon").classList.toggle("hidden", !isPlaying);
+  document.getElementById("innerPlayIcon")?.classList.toggle("hidden", isPlaying);
+  document.getElementById("innerPauseIcon")?.classList.toggle("hidden", !isPlaying);
 
   const mobilePlay = document.getElementById("mobilePlayBtn");
   if(mobilePlay) {
@@ -133,14 +143,14 @@ function updatePlayPauseBtn() {
 
 // ─── CONTROLS WIRING ──────────────────────────────────────
 document.getElementById("btnPlayPause").addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
-document.getElementById("innerPlayBtn").addEventListener("click", togglePlayPause);
+document.getElementById("innerPlayBtn")?.addEventListener("click", togglePlayPause);
 document.getElementById("mobilePlayBtn")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
 
 document.getElementById("btnNext").addEventListener("click", (e) => { e.stopPropagation(); playNext(); });
-document.getElementById("innerNext").addEventListener("click", playNext);
+document.getElementById("innerNext")?.addEventListener("click", playNext);
 
 document.getElementById("btnPrev").addEventListener("click", (e) => { e.stopPropagation(); playPrev(); });
-document.getElementById("innerPrev").addEventListener("click", playPrev);
+document.getElementById("innerPrev")?.addEventListener("click", playPrev);
 
 function playNext() {
   if (currentQueue.length === 0) return;
@@ -173,13 +183,14 @@ function updateProgress() {
   document.getElementById("currentTime").textContent = formatTime(current);
   document.getElementById("totalTime").textContent = formatTime(total);
 
-  document.getElementById("innerProgressFill").style.width = pct + "%";
-  document.getElementById("innerCurrentTime").textContent = formatTime(current);
-  document.getElementById("innerTotalTime").textContent = formatTime(total);
+  const innerFill = document.getElementById("innerProgressFill");
+  if (innerFill) innerFill.style.width = pct + "%";
+  if (document.getElementById("innerCurrentTime")) document.getElementById("innerCurrentTime").textContent = formatTime(current);
+  if (document.getElementById("innerTotalTime")) document.getElementById("innerTotalTime").textContent = formatTime(total);
 }
 
 document.getElementById("progressBar").addEventListener("click", seekAudio);
-document.getElementById("innerProgressBar").addEventListener("click", seekAudio);
+document.getElementById("innerProgressBar")?.addEventListener("click", seekAudio);
 
 function seekAudio(e) {
   if (!ytReady) return;
@@ -218,21 +229,12 @@ function checkIfFavorite() {
   const track = currentQueue[currentIndex];
   const isFav = userFavorites.some(t => t.id === track.id);
 
-  document.getElementById("npHeart").classList.toggle("liked", isFav);
-  document.getElementById("innerHeart").classList.toggle("liked", isFav);
+  document.getElementById("npHeart")?.classList.toggle("liked", isFav);
+  document.getElementById("innerHeart")?.classList.toggle("liked", isFav);
 }
 
-document.getElementById("npHeart").addEventListener("click", toggleFavoriteAction);
-document.getElementById("innerHeart").addEventListener("click", toggleFavoriteAction);
-
-// ─── INNER SCREEN SLIDE LOGIC ─────────────────────────────
-document.getElementById("mainPlayerBar").addEventListener("click", () => {
-    document.getElementById("innerPlayerScreen").classList.add("active");
-});
-document.getElementById("closeInnerScreen").addEventListener("click", (e) => {
-    e.stopPropagation();
-    document.getElementById("innerPlayerScreen").classList.remove("active");
-});
+document.getElementById("npHeart")?.addEventListener("click", toggleFavoriteAction);
+document.getElementById("innerHeart")?.addEventListener("click", toggleFavoriteAction);
 
 // ─── SEARCH & UI LOGIC ────────────────────────────────────
 const searchInput = document.getElementById("searchInput");
@@ -242,7 +244,7 @@ let searchTimeout = null;
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
     const q = e.target.value.trim();
-    searchClear.classList.toggle("hidden", !q);
+    if (searchClear) searchClear.classList.toggle("hidden", !q);
     clearTimeout(searchTimeout);
     if (q.length > 1) {
       showSection("search");
@@ -250,14 +252,6 @@ if (searchInput) {
     } else if (!q) {
       document.getElementById("searchResults").innerHTML = "";
     }
-  });
-}
-
-if (searchClear) {
-  searchClear.addEventListener("click", () => {
-    searchInput.value = "";
-    searchClear.classList.add("hidden");
-    searchInput.focus();
   });
 }
 
@@ -271,31 +265,11 @@ window.showSection = function(name) {
   document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
   const navId = "nav" + name.charAt(0).toUpperCase() + name.slice(1);
   if (document.getElementById(navId)) document.getElementById(navId).classList.add("active");
-
-  document.querySelectorAll(".mobile-nav-btn").forEach(el => el.classList.remove("active"));
-  const mNavId = "mobileNav" + name.charAt(0).toUpperCase() + name.slice(1);
-  if (document.getElementById(mNavId)) document.getElementById(mNavId).classList.add("active");
 };
 
-document.getElementById("navHome")?.addEventListener("click", () => showSection("home"));
-document.getElementById("navSearch")?.addEventListener("click", () => { showSection("search"); searchInput.focus(); });
-document.getElementById("navLibrary")?.addEventListener("click", () => showSection("library"));
-
-// ─── API FETCH HELPER ─────────────────────────────────────
-async function fetchFromBackendProxy(query) {
-  const optimizedQuery = query + " official audio";
-  const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(optimizedQuery)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Backend error");
-  return await res.json();
-}
-
+// ─── SEARCH ENGINE ───
 async function searchYT(query) {
-  const loading = document.getElementById("searchLoading");
   const results = document.getElementById("searchResults");
-  
-  // 🔄 FIX: If not loading then do loading...
-  if (loading) loading.classList.remove("hidden");
   if (results) results.innerHTML = `<div class="status-msg-box">Searching tracks...</div>`;
 
   try {
@@ -306,35 +280,28 @@ async function searchYT(query) {
       id: item.id.videoId, 
       title: item.snippet.title, 
       channel: item.snippet.channelTitle,
-      thumb: item.snippet.thumbnails?.maxres?.url || item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
+      thumb: item.snippet.thumbnails?.high?.url || `https://img.youtube.com/vi/${item.id.videoId}/0.jpg`,
     }));
 
-    // 🔄 FIX: When loaded, do normal layout
     if (results) {
       if (currentQueue.length === 0) {
-        results.innerHTML = `<div class="status-msg-box">No results found.</div>`;
+        results.innerHTML = `<div class="status-msg-box">No tracks found.</div>`;
       } else {
         results.innerHTML = currentQueue.map((track, i) => `
           <div class="search-item" onclick="playFromQueue(${i})">
             <img class="search-thumb" src="${track.thumb}" alt="">
             <div class="search-info">
-                <div class="search-title">${escHtml(track.title)}</div>
-                <div class="search-channel">${escHtml(track.channel)}</div>
+              <div class="search-title">${escHtml(track.title)}</div>
+              <div class="search-channel">${escHtml(track.channel)}</div>
             </div>
           </div>
         `).join("");
       }
     }
   } catch (err) {
-    console.error("Search failed:", err);
     if (results) {
-      results.innerHTML = `<div class="status-msg-box" style="color: #ff4444; font-weight: bold;">
-        Backend connection failed. <br><br>
-        Please check your network or try again shortly.
-      </div>`;
+      results.innerHTML = `<div class="status-msg-box" style="color: #ff4444;">Search failed. Try again.</div>`;
     }
-  } finally {
-    if (loading) loading.classList.add("hidden");
   }
 }
 
@@ -351,22 +318,62 @@ window.playFromFavorites = function(index) {
   playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
-// Quick Card Clicks
-document.querySelectorAll(".quick-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const query = card.dataset.query;
-    if (searchInput) searchInput.value = query;
-    const searchClearBtn = document.getElementById("searchClear");
-    if (searchClearBtn) searchClearBtn.classList.remove("hidden");
-    showSection("search");
-    searchYT(query);
-  });
-});
+// ─── SEQUENTIAL WATERFALL FEED LOADER ───────────────────────
+function generateCardsHTML(containerId, tracks) {
+  return tracks.map((track, i) => `
+    <div class="music-card" onclick="playFeedTrack('${containerId}', ${i})">
+      <img class="card-thumb" src="${track.thumb}" alt="" onerror="this.src='https://img.youtube.com/vi/${track.id}/0.jpg'">
+      <div class="card-title">${escHtml(track.title)}</div>
+      <div class="card-sub">${escHtml(track.channel)}</div>
+    </div>
+  `).join("");
+}
+
+async function loadFeed(query, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container._feedData = fallbackTracks;
+  container.innerHTML = generateCardsHTML(containerId, fallbackTracks);
+
+  try {
+    const data = await fetchFromBackendProxy(query);
+    const items = data.items || [];
+    if (items.length > 0) {
+      container._feedData = items.map((item) => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        thumb: item.snippet.thumbnails?.high?.url || `https://img.youtube.com/vi/${item.id.videoId}/0.jpg`,
+      }));
+      container.innerHTML = generateCardsHTML(containerId, container._feedData);
+    }
+  } catch (err) {
+    console.warn(`Keeping backup fallback tracks on screen for ${containerId}`);
+  }
+}
+
+async function fetchFromBackendProxy(query) {
+  const optimizedQuery = query + " official audio";
+  const url = `${BACKEND_SEARCH_URL}?q=${encodeURIComponent(optimizedQuery)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Backend error");
+  return await res.json();
+}
+
+window.playFeedTrack = function(containerId, index) {
+  const container = document.getElementById(containerId);
+  if (!container || !container._feedData) return;
+  currentQueue = container._feedData;
+  currentIndex = index;
+  const track = currentQueue[index];
+  playVideo(track.id, track.title, track.channel, track.thumb);
+};
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-// ─── INITIALIZATION ───────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
+// ─── RUN SYSTEM ───────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
   const h = new Date().getHours();
   let g = "Good Evening";
   if (h < 12) g = "Good Morning";
@@ -376,6 +383,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderFavoritesList();
   loadYTApi();
-  
-  // 🗑️ FIX: Completely deleted the old auto-suggest loadFeed calls to maximize speed and remove unwanted rows.
+
+  // Runs your clean sequential loading layout
+  await loadFeed("Top Hindi Songs", "madeForYou");
+  await loadFeed("Trending Music India", "trendingRow");
+  await loadFeed("Anime OST", "animeRow");
 });
