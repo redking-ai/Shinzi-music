@@ -101,12 +101,10 @@ function updateNowPlaying(title, channel, thumb) {
   const safeChannel = channel || "Shinzi Music";
   const highResThumb = thumb || "https://img.youtube.com/vi/default/0.jpg";
 
-  // Safely update main player
   if (document.getElementById("npTitle")) document.getElementById("npTitle").textContent = safeTitle;
   if (document.getElementById("npArtist")) document.getElementById("npArtist").textContent = safeChannel;
   if (document.getElementById("npThumb")) document.getElementById("npThumb").innerHTML = `<img src="${highResThumb}" alt="thumb" style="width:100%;height:100%;object-fit:cover;">`;
 
-  // Safely update inner screen (if it exists in your HTML)
   if (document.getElementById("innerTitle")) document.getElementById("innerTitle").textContent = safeTitle;
   if (document.getElementById("innerArtist")) document.getElementById("innerArtist").textContent = safeChannel;
   if (document.getElementById("innerThumbImg")) document.getElementById("innerThumbImg").src = highResThumb;
@@ -130,7 +128,6 @@ function togglePlayPause() {
   else ytPlayer.playVideo();
 }
 
-// ─── UI BUTTON UPDATES ───
 function updatePlayPauseBtn() {
   document.getElementById("playIcon")?.classList.toggle("hidden", isPlaying);
   document.getElementById("pauseIcon")?.classList.toggle("hidden", !isPlaying);
@@ -146,7 +143,7 @@ function updatePlayPauseBtn() {
   }
 }
 
-// ─── CONTROLS WIRING (Safe AddEventListeners) ───────────────
+// ─── CONTROLS WIRING ──────────────────────────────────────
 document.getElementById("btnPlayPause")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
 document.getElementById("innerPlayBtn")?.addEventListener("click", togglePlayPause);
 document.getElementById("mobilePlayBtn")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
@@ -240,7 +237,7 @@ function checkIfFavorite() {
 document.getElementById("npHeart")?.addEventListener("click", toggleFavoriteAction);
 document.getElementById("innerHeart")?.addEventListener("click", toggleFavoriteAction);
 
-// ─── SAFE INNER SCREEN SLIDE LOGIC ────────────────────────
+// ─── INNER SCREEN SLIDE LOGIC ─────────────────────────────
 const mainPlayerBar = document.getElementById("mainPlayerBar");
 const innerPlayerScreen = document.getElementById("innerPlayerScreen");
 const closeInnerScreen = document.getElementById("closeInnerScreen");
@@ -276,27 +273,28 @@ if (searchInput) {
   });
 }
 
-// 🔥 THIS IS THE FIX THAT STOPS THE CRASHES 🔥
+// 🔥 THIS FIXES THE MOBILE GLOW ISSUE FOR GOOD 🔥
 window.showSection = function(name) {
   const sections = ["home", "search", "library"];
   
-  // 1. Show/Hide main content safely
+  // 1. Show/Hide main content
   sections.forEach(sec => {
     const el = document.getElementById(sec + "Section");
     if (el) el.classList.toggle("hidden", name !== sec);
   });
 
-  // 2. Clear 'active' styling from all buttons safely
+  // 2. Remove 'active' class from ALL Desktop & Mobile buttons
   document.querySelectorAll(".nav-item, .mobile-nav-btn").forEach(el => {
     el.classList.remove("active");
   });
 
-  // 3. Add 'active' styling to the newly clicked button
+  // 3. Add 'active' class to the correctly clicked button
   const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
-  const desktopBtn = document.getElementById("nav" + capitalized);
-  const mobileBtn = document.getElementById("mobileNav" + capitalized);
   
+  const desktopBtn = document.getElementById("nav" + capitalized);
   if (desktopBtn) desktopBtn.classList.add("active");
+  
+  const mobileBtn = document.getElementById("mobileNav" + capitalized);
   if (mobileBtn) mobileBtn.classList.add("active");
 };
 
@@ -428,7 +426,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderFavoritesList();
   loadYTApi();
 
-  // Runs your dynamic API rows
   await loadFeed("Top Hindi Songs", "madeForYou");
   await loadFeed("Trending Music India", "trendingRow");
   await loadFeed("Anime OST", "animeRow");
