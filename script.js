@@ -10,7 +10,7 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── FALLBACK DATA (Safe fallback links that never show gray boxes) ───
+// ─── FALLBACK DATA (Safe links that never show gray boxes) ───
 const fallbackTracks = [
   { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://img.youtube.com/vi/UxxajLWwzqY/0.jpg" },
   { id: "lz157kuOMC8", title: "Live Another Day", channel: "KORDHELL", thumb: "https://img.youtube.com/vi/lz157kuOMC8/0.jpg" },
@@ -32,7 +32,7 @@ function renderFavoritesList() {
   if (!container) return;
 
   if (userFavorites.length === 0) {
-    container.innerHTML = `<div class="status-msg-box">No favorites yet. Tap the heart to save songs!</div>`;
+    container.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #a7a7a7;">No favorites yet. Tap the heart to save songs!</div>`;
     return;
   }
 
@@ -97,19 +97,24 @@ function playVideo(videoId, title, channel, thumb) {
 }
 
 function updateNowPlaying(title, channel, thumb) {
-  document.getElementById("npTitle").textContent = title || "Unknown";
-  document.getElementById("npArtist").textContent = channel || "Shinzi Music";
+  const safeTitle = title || "Unknown";
+  const safeChannel = channel || "Shinzi Music";
   const highResThumb = thumb || "https://img.youtube.com/vi/default/0.jpg";
-  document.getElementById("npThumb").innerHTML = `<img src="${highResThumb}" alt="thumb">`;
 
-  document.getElementById("innerTitle").textContent = title || "Unknown";
-  document.getElementById("innerArtist").textContent = channel || "Shinzi Music";
-  document.getElementById("innerThumbImg").src = highResThumb;
+  // Safely update main player
+  if (document.getElementById("npTitle")) document.getElementById("npTitle").textContent = safeTitle;
+  if (document.getElementById("npArtist")) document.getElementById("npArtist").textContent = safeChannel;
+  if (document.getElementById("npThumb")) document.getElementById("npThumb").innerHTML = `<img src="${highResThumb}" alt="thumb" style="width:100%;height:100%;object-fit:cover;">`;
+
+  // Safely update inner screen (if it exists in your HTML)
+  if (document.getElementById("innerTitle")) document.getElementById("innerTitle").textContent = safeTitle;
+  if (document.getElementById("innerArtist")) document.getElementById("innerArtist").textContent = safeChannel;
+  if (document.getElementById("innerThumbImg")) document.getElementById("innerThumbImg").src = highResThumb;
 
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: title || "Unknown Track",
-      artist: channel || "Shinzi Music",
+      title: safeTitle,
+      artist: safeChannel,
       artwork: [{ src: highResThumb, sizes: '512x512', type: 'image/jpeg' }]
     });
     navigator.mediaSession.setActionHandler('play', togglePlayPause);
@@ -127,8 +132,8 @@ function togglePlayPause() {
 
 // ─── UI BUTTON UPDATES ───
 function updatePlayPauseBtn() {
-  document.getElementById("playIcon").classList.toggle("hidden", isPlaying);
-  document.getElementById("pauseIcon").classList.toggle("hidden", !isPlaying);
+  document.getElementById("playIcon")?.classList.toggle("hidden", isPlaying);
+  document.getElementById("pauseIcon")?.classList.toggle("hidden", !isPlaying);
 
   document.getElementById("innerPlayIcon")?.classList.toggle("hidden", isPlaying);
   document.getElementById("innerPauseIcon")?.classList.toggle("hidden", !isPlaying);
@@ -141,15 +146,15 @@ function updatePlayPauseBtn() {
   }
 }
 
-// ─── CONTROLS WIRING ──────────────────────────────────────
-document.getElementById("btnPlayPause").addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
+// ─── CONTROLS WIRING (Safe AddEventListeners) ───────────────
+document.getElementById("btnPlayPause")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
 document.getElementById("innerPlayBtn")?.addEventListener("click", togglePlayPause);
 document.getElementById("mobilePlayBtn")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
 
-document.getElementById("btnNext").addEventListener("click", (e) => { e.stopPropagation(); playNext(); });
+document.getElementById("btnNext")?.addEventListener("click", (e) => { e.stopPropagation(); playNext(); });
 document.getElementById("innerNext")?.addEventListener("click", playNext);
 
-document.getElementById("btnPrev").addEventListener("click", (e) => { e.stopPropagation(); playPrev(); });
+document.getElementById("btnPrev")?.addEventListener("click", (e) => { e.stopPropagation(); playPrev(); });
 document.getElementById("innerPrev")?.addEventListener("click", playPrev);
 
 function playNext() {
@@ -179,17 +184,16 @@ function updateProgress() {
   const total = ytPlayer.getDuration() || 0;
   const pct = total > 0 ? (current / total) * 100 : 0;
 
-  document.getElementById("progressFill").style.width = pct + "%";
-  document.getElementById("currentTime").textContent = formatTime(current);
-  document.getElementById("totalTime").textContent = formatTime(total);
+  if (document.getElementById("progressFill")) document.getElementById("progressFill").style.width = pct + "%";
+  if (document.getElementById("currentTime")) document.getElementById("currentTime").textContent = formatTime(current);
+  if (document.getElementById("totalTime")) document.getElementById("totalTime").textContent = formatTime(total);
 
-  const innerFill = document.getElementById("innerProgressFill");
-  if (innerFill) innerFill.style.width = pct + "%";
+  if (document.getElementById("innerProgressFill")) document.getElementById("innerProgressFill").style.width = pct + "%";
   if (document.getElementById("innerCurrentTime")) document.getElementById("innerCurrentTime").textContent = formatTime(current);
   if (document.getElementById("innerTotalTime")) document.getElementById("innerTotalTime").textContent = formatTime(total);
 }
 
-document.getElementById("progressBar").addEventListener("click", seekAudio);
+document.getElementById("progressBar")?.addEventListener("click", seekAudio);
 document.getElementById("innerProgressBar")?.addEventListener("click", seekAudio);
 
 function seekAudio(e) {
@@ -236,7 +240,24 @@ function checkIfFavorite() {
 document.getElementById("npHeart")?.addEventListener("click", toggleFavoriteAction);
 document.getElementById("innerHeart")?.addEventListener("click", toggleFavoriteAction);
 
-// ─── SEARCH & UI LOGIC ────────────────────────────────────
+// ─── SAFE INNER SCREEN SLIDE LOGIC ────────────────────────
+const mainPlayerBar = document.getElementById("mainPlayerBar");
+const innerPlayerScreen = document.getElementById("innerPlayerScreen");
+const closeInnerScreen = document.getElementById("closeInnerScreen");
+
+if (mainPlayerBar && innerPlayerScreen) {
+    mainPlayerBar.addEventListener("click", () => {
+        innerPlayerScreen.classList.add("active");
+    });
+}
+if (closeInnerScreen && innerPlayerScreen) {
+    closeInnerScreen.addEventListener("click", (e) => {
+        e.stopPropagation();
+        innerPlayerScreen.classList.remove("active");
+    });
+}
+
+// ─── SEARCH & BULLETPROOF UI NAVIGATION ────────────────────
 const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
 let searchTimeout = null;
@@ -255,22 +276,34 @@ if (searchInput) {
   });
 }
 
+// 🔥 THIS IS THE FIX THAT STOPS THE CRASHES 🔥
 window.showSection = function(name) {
   const sections = ["home", "search", "library"];
+  
+  // 1. Show/Hide main content safely
   sections.forEach(sec => {
     const el = document.getElementById(sec + "Section");
     if (el) el.classList.toggle("hidden", name !== sec);
   });
 
-  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
-  const navId = "nav" + name.charAt(0).toUpperCase() + name.slice(1);
-  if (document.getElementById(navId)) document.getElementById(navId).classList.add("active");
+  // 2. Clear 'active' styling from all buttons safely
+  document.querySelectorAll(".nav-item, .mobile-nav-btn").forEach(el => {
+    el.classList.remove("active");
+  });
+
+  // 3. Add 'active' styling to the newly clicked button
+  const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
+  const desktopBtn = document.getElementById("nav" + capitalized);
+  const mobileBtn = document.getElementById("mobileNav" + capitalized);
+  
+  if (desktopBtn) desktopBtn.classList.add("active");
+  if (mobileBtn) mobileBtn.classList.add("active");
 };
 
-// ─── SEARCH ENGINE ───
+// ─── SEARCH ENGINE CONNECTION ───
 async function searchYT(query) {
   const results = document.getElementById("searchResults");
-  if (results) results.innerHTML = `<div class="status-msg-box">Searching tracks...</div>`;
+  if (results) results.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #a7a7a7;">Searching tracks...</div>`;
 
   try {
     const data = await fetchFromBackendProxy(query);
@@ -285,11 +318,11 @@ async function searchYT(query) {
 
     if (results) {
       if (currentQueue.length === 0) {
-        results.innerHTML = `<div class="status-msg-box">No tracks found.</div>`;
+        results.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #a7a7a7;">No tracks found.</div>`;
       } else {
         results.innerHTML = currentQueue.map((track, i) => `
           <div class="search-item" onclick="playFromQueue(${i})">
-            <img class="search-thumb" src="${track.thumb}" alt="">
+            <img class="search-thumb" src="${track.thumb}" alt="" onerror="this.src='https://img.youtube.com/vi/${track.id}/0.jpg'">
             <div class="search-info">
               <div class="search-title">${escHtml(track.title)}</div>
               <div class="search-channel">${escHtml(track.channel)}</div>
@@ -300,7 +333,7 @@ async function searchYT(query) {
     }
   } catch (err) {
     if (results) {
-      results.innerHTML = `<div class="status-msg-box" style="color: #ff4444;">Search failed. Try again.</div>`;
+      results.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #ff4444;">Search failed. Try again.</div>`;
     }
   }
 }
@@ -372,6 +405,17 @@ window.playFeedTrack = function(containerId, index) {
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
+// Quick Card Clicks for Search Filters
+document.querySelectorAll(".quick-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const query = card.dataset.query;
+    if (searchInput) searchInput.value = query;
+    if (searchClear) searchClear.classList.remove("hidden");
+    showSection("search");
+    searchYT(query);
+  });
+});
+
 // ─── RUN SYSTEM ───────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   const h = new Date().getHours();
@@ -384,7 +428,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderFavoritesList();
   loadYTApi();
 
-  // Runs your clean sequential loading layout
+  // Runs your dynamic API rows
   await loadFeed("Top Hindi Songs", "madeForYou");
   await loadFeed("Trending Music India", "trendingRow");
   await loadFeed("Anime OST", "animeRow");
