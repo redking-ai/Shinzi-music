@@ -42,7 +42,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "PASTE_YOUR_API_KEY_HERE", authDomain: "shinzi-music.firebaseapp.com", projectId: "shinzi-music", storageBucket: "shinzi-music.firebasestorage.app", messagingSenderId: "985596670426", appId: "1:985596670426:web:b52b69290533ae3dc450e3" };
+        const firebaseConfig = { apiKey: "AIzaSyA9-BquJOixe2dkuMA4OR_LH_-4kqcFrRE", authDomain: "shinzi-music.firebaseapp.com", projectId: "shinzi-music", storageBucket: "shinzi-music.firebasestorage.app", messagingSenderId: "985596670426", appId: "1:985596670426:web:b52b69290533ae3dc450e3" };
         const auth = getAuth(initializeApp(firebaseConfig));
 
         onAuthStateChanged(auth, (user) => {
