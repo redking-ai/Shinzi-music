@@ -4,7 +4,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, Go
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA9-BquJOixe2dkuMA4OR_LH_-4kqcFrRE",", 
+  apiKey: "AIzaSyA9-BquJOixe2dkuMA4OR_LH_-4kqcFrRE", 
   authDomain: "shinzi-music.firebaseapp.com",
   projectId: "shinzi-music",
   storageBucket: "shinzi-music.firebasestorage.app",
@@ -18,14 +18,13 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 // ─── CUSTOM NAME GENERATOR ALGORITHM ───
-// Turns "Redking519@gmail.com" into "Redking"
 function generateNameFromEmail(email) {
-    let namePart = email.split('@')[0]; // Takes everything before @
-    namePart = namePart.replace(/[0-9]/g, ''); // Removes all numbers
-    return namePart.charAt(0).toUpperCase() + namePart.slice(1); // Capitalizes first letter
+    let namePart = email.split('@')[0]; 
+    namePart = namePart.replace(/[0-9]/g, ''); 
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1); 
 }
 
-// ─── STRICT PASSWORD VALIDATION (Based on your blueprint) ───
+// ─── STRICT PASSWORD VALIDATION ───
 function validatePassword(password) {
     let isTooShort = password.length < 12;
     let hasGaps = password.includes(" ");
@@ -37,7 +36,16 @@ function validatePassword(password) {
     return "OK";
 }
 
-// ─── SIGN UP PAGE LOGIC ───
+// ─── CUSTOM ERROR HANDLER (Server Down Feature) ───
+function handleError(error, errorBox) {
+    if (error.code === 'auth/network-request-failed') {
+        errorBox.innerText = "Server not working. Please check your internet.";
+    } else {
+        errorBox.innerText = error.message.replace("Firebase: ", "");
+    }
+}
+
+// ─── SIGN UP WITH EMAIL ───
 const btnSignup = document.getElementById("btnSignup");
 if (btnSignup) {
     btnSignup.addEventListener("click", async () => {
@@ -46,52 +54,42 @@ if (btnSignup) {
         const termsCheck = document.getElementById("termsCheck").checked;
         const errorBox = document.getElementById("passwordError");
 
-        if (!termsCheck) {
-            errorBox.innerText = "You must accept the Terms and Policy.";
-            return;
-        }
-
+        if (!termsCheck) { errorBox.innerText = "You must accept the Terms and Policy."; return; }
         const passwordCheck = validatePassword(password);
-        if (passwordCheck !== "OK") {
-            errorBox.innerText = passwordCheck;
-            return;
-        }
+        if (passwordCheck !== "OK") { errorBox.innerText = passwordCheck; return; }
 
         try {
-            // Create the account in Firebase
+            errorBox.innerText = "Connecting..."; // Visual feedback!
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            
-            // Generate the custom name and save it to the account
             const customName = generateNameFromEmail(email);
             await updateProfile(userCredential.user, { displayName: customName });
-            
-            // Redirect to main app
-            window.location.href = "index.html";
-        } catch (error) {
-            errorBox.innerText = error.message.replace("Firebase: ", "");
-        }
-    });
-
-    document.getElementById("btnGoogleSignup").addEventListener("click", async () => {
-        const termsCheck = document.getElementById("termsCheck").checked;
-        const errorBox = document.getElementById("passwordError");
-        
-        if (!termsCheck) {
-            errorBox.innerText = "You must accept the Terms and Policy to use Google.";
-            return;
-        }
-
-        try {
-            // Google automatically provides their real Display Name!
-            await signInWithPopup(auth, googleProvider);
-            window.location.href = "index.html";
-        } catch (error) {
-            errorBox.innerText = error.message.replace("Firebase: ", "");
+            window.location.href = "index.html"; // Teleports to homepage
+        } catch (error) { 
+            handleError(error, errorBox); 
         }
     });
 }
 
-// ─── LOG IN PAGE LOGIC ───
+// ─── SIGN UP WITH GOOGLE ───
+const btnGoogleSignup = document.getElementById("btnGoogleSignup");
+if (btnGoogleSignup) {
+    btnGoogleSignup.addEventListener("click", async () => {
+        const termsCheck = document.getElementById("termsCheck").checked;
+        const errorBox = document.getElementById("passwordError");
+        
+        if (!termsCheck) { errorBox.innerText = "You must accept the Terms and Policy to use Google."; return; }
+
+        try {
+            errorBox.innerText = "Opening Google..."; // Visual feedback!
+            await signInWithPopup(auth, googleProvider);
+            window.location.href = "index.html"; // Teleports to homepage
+        } catch (error) { 
+            handleError(error, errorBox); 
+        }
+    });
+}
+
+// ─── LOG IN WITH EMAIL ───
 const btnLogin = document.getElementById("btnLogin");
 if (btnLogin) {
     btnLogin.addEventListener("click", async () => {
@@ -100,19 +98,26 @@ if (btnLogin) {
         const errorBox = document.getElementById("loginError");
 
         try {
+            errorBox.innerText = "Logging in..."; // Visual feedback!
             await signInWithEmailAndPassword(auth, email, password);
-            window.location.href = "index.html";
-        } catch (error) {
-            errorBox.innerText = "Incorrect email or password.";
+            window.location.href = "index.html"; // Teleports to homepage
+        } catch (error) { 
+            handleError(error, errorBox); 
         }
     });
+}
 
-    document.getElementById("btnGoogleLogin").addEventListener("click", async () => {
+// ─── LOG IN WITH GOOGLE ───
+const btnGoogleLogin = document.getElementById("btnGoogleLogin");
+if (btnGoogleLogin) {
+    btnGoogleLogin.addEventListener("click", async () => {
+        const errorBox = document.getElementById("loginError");
         try {
+            errorBox.innerText = "Opening Google..."; // Visual feedback!
             await signInWithPopup(auth, googleProvider);
-            window.location.href = "index.html";
-        } catch (error) {
-            document.getElementById("loginError").innerText = error.message.replace("Firebase: ", "");
+            window.location.href = "index.html"; // Teleports to homepage
+        } catch (error) { 
+            handleError(error, errorBox); 
         }
     });
 }
