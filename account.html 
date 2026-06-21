@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background-color: #000; color: #fff; padding: 20px; }
+        .header { display: flex; align-items: center; margin-bottom: 30px; font-size: 20px; font-weight: 700; border-bottom: 1px solid #282828; padding-bottom: 10px; }
+        .back-btn { text-decoration: none; color: #fff; margin-right: 16px; font-size: 24px; }
+        .logo-box { display: flex; justify-content: center; margin-bottom: 30px; }
+        .circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid #a7a7a7; display: flex; align-items: center; justify-content: center; font-size: 40px; position: relative; }
+        .edit-icon { position: absolute; bottom: 0; right: 0; background: #121212; padding: 4px; border: 1px solid #a7a7a7; font-size: 12px; }
+        .input-group { margin-bottom: 20px; position: relative; }
+        .label { font-size: 12px; color: #a7a7a7; display: block; margin-bottom: 6px; }
+        .input-box { width: 100%; padding: 14px; background: #121212; border: 1px solid #282828; border-radius: 8px; color: #fff; font-size: 16px; outline: none; }
+        .tick { position: absolute; right: 14px; top: 38px; color: #1db954; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="header"><a href="settings.html" class="back-btn">←</a> Account Settings</div>
+    
+    <div class="logo-box">
+        <div class="circle" id="accInitial">? <div class="edit-icon">✏️</div></div>
+    </div>
+
+    <div class="input-group">
+        <span class="label">Account name</span>
+        <input type="text" class="input-box" id="accName" value="Loading...">
+    </div>
+    <div class="input-group">
+        <span class="label">Email</span>
+        <input type="email" class="input-box" id="accEmail" value="Loading..." readonly>
+        <span class="tick">☑</span>
+    </div>
+    <div class="input-group">
+        <span class="label">Password</span>
+        <input type="password" class="input-box" value="*************" disabled>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "PASTE_YOUR_API_KEY_HERE", authDomain: "shinzi-music.firebaseapp.com", projectId: "shinzi-music", storageBucket: "shinzi-music.firebasestorage.app", messagingSenderId: "985596670426", appId: "1:985596670426:web:b52b69290533ae3dc450e3" };
+        const auth = getAuth(initializeApp(firebaseConfig));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                let name = user.displayName || user.email.split('@')[0];
+                document.getElementById('accInitial').innerHTML = `${name.charAt(0).toUpperCase()} <div class="edit-icon">✏️</div>`;
+                document.getElementById('accName').value = name;
+                document.getElementById('accEmail').value = user.email;
+            }
+        });
+    </script>
+</body>
+</html>
