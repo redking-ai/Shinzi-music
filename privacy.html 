@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background-color: #000; color: #fff; padding: 20px; }
+        .header { display: flex; align-items: center; margin-bottom: 30px; font-size: 20px; font-weight: 700; border-bottom: 1px solid #282828; padding-bottom: 10px; }
+        .back-btn { text-decoration: none; color: #fff; margin-right: 16px; font-size: 24px; }
+        .label { font-size: 14px; color: #a7a7a7; display: block; margin-bottom: 8px; margin-top: 20px; }
+        select { width: 100%; padding: 14px; background: #121212; border: 1px solid #282828; border-radius: 8px; color: #fff; font-size: 16px; outline: none; appearance: none; }
+    </style>
+</head>
+<body>
+    <div class="header"><a href="settings.html" class="back-btn">←</a> Privacy Settings</div>
+    
+    <span class="label">Library Categorys</span>
+    <select>
+        <option selected>Private</option>
+        <option>Public</option>
+    </select>
+
+    <span class="label">Who can see your account</span>
+    <select>
+        <option selected>No one</option>
+        <option>Only followers</option>
+        <option>Everyone</option>
+    </select>
+
+    <span class="label">Who can follow you</span>
+    <select>
+        <option selected>No one</option>
+        <option>Everyone</option>
+    </select>
+</body>
+</html>
