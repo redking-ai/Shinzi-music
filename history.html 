@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background-color: #000; color: #fff; padding: 20px; }
+        .header { display: flex; align-items: center; margin-bottom: 20px; font-size: 20px; font-weight: 700; border-bottom: 1px solid #282828; padding-bottom: 10px; }
+        .back-btn { text-decoration: none; color: #fff; margin-right: 16px; font-size: 24px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+        .box { background: #121212; border: 1px solid #282828; aspect-ratio: 1; border-radius: 4px; }
+        .info { font-size: 10px; color: #a7a7a7; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header"><a href="settings.html" class="back-btn">←</a> History</div>
+    
+    <p style="font-size: 14px;">Your all listened musics: Today</p>
+    
+    <div class="grid">
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+        <div><div class="box"></div><div class="info">Name:<br>Played Time:</div></div>
+    </div>
+</body>
+</html>
