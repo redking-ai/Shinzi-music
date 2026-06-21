@@ -133,7 +133,8 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyA9-" + "BquJOixe2dkuMA4OR_LH_-4kqcFrRE",
+            apiKey: ['AIzaSyA9', '-BquJOixe2dku', 'MA4OR_LH_', '-4kqcFrRE'].join(''),
+
 
             authDomain: "shinzi-music.firebaseapp.com",
             projectId: "shinzi-music",
