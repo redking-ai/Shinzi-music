@@ -168,7 +168,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: ['AIzaSyA9', '-BquJOixe2dku', 'MA4OR_LH_', '-4kqcFrRE'].join(''),
@@ -179,15 +179,20 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
+        
+        // YOUR SHINZI AI FIX: Force the account selection popup
+        googleProvider.setCustomParameters({ prompt: "select_account" });
+        
         const errorMsg = document.getElementById('error-msg');
 
-        // The radar that catches the successful Google redirect or Email signup
+        // Radar
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.location.href = "index.html";
             }
         });
 
+        // Standard Email Signup
         window.handleSignup = () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -217,8 +222,18 @@
                 });
         };
 
-        window.handleGoogleLogin = () => {
-            signInWithRedirect(auth, googleProvider);
+        // SHINZI AI METHOD: Popup Google Signup
+        window.handleGoogleLogin = async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                console.log("Signup success:", result.user.email);
+            } catch (err) {
+                if (err.code !== "auth/popup-closed-by-user") {
+                    console.error("Signup error:", err);
+                    errorMsg.textContent = "Google sign up failed: " + err.message;
+                    errorMsg.style.display = "block";
+                }
+            }
         };
     </script>
 </body>
