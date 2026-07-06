@@ -148,7 +148,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: ['AIzaSyA9', '-BquJOixe2dku', 'MA4OR_LH_', '-4kqcFrRE'].join(''),
@@ -159,15 +159,20 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
+        
+        // YOUR SHINZI AI FIX: Force the account selection popup
+        googleProvider.setCustomParameters({ prompt: "select_account" });
+        
         const errorMsg = document.getElementById('error-msg');
 
-        // The radar that catches the successful Google redirect or Email login
+        // Radar: Automatically kicks you to index.html when login succeeds
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.location.href = "index.html";
             }
         });
 
+        // Standard Email Login
         window.handleEmailLogin = () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -186,8 +191,18 @@
                 });
         };
 
-        window.handleGoogleLogin = () => {
-            signInWithRedirect(auth, googleProvider);
+        // SHINZI AI METHOD: Popup Google Login
+        window.handleGoogleLogin = async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                console.log("Login success:", result.user.email);
+            } catch (err) {
+                if (err.code !== "auth/popup-closed-by-user") {
+                    console.error("Login error:", err);
+                    errorMsg.textContent = "Google login failed: " + err.message;
+                    errorMsg.style.display = "block";
+                }
+            }
         };
     </script>
 </body>
