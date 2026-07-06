@@ -5,68 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Shinzi Music</title>
     <style>
-        body { 
-            margin: 0; 
-            background-color: #0b0c10; 
-            color: #ffffff; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
+        body {
+            margin: 0;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
-        .container { 
-            background-color: #1f2833; 
-            padding: 35px; 
-            border-radius: 12px; 
-            width: 85%; 
-            max-width: 400px; 
+        .card {
+            background-color: #121212;
+            padding: 30px 24px;
+            border-radius: 18px;
+            width: 90%;
+            max-width: 380px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
-        h2 { color: #00ff66; margin-bottom: 25px; font-weight: 600; }
-        input { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 10px 0; 
-            border: 1px solid #45a29e; 
-            background: #0b0c10; 
-            color: #ffffff; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
+        .logo {
+            width: 70px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 24px 0;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        input {
+            width: 100%;
+            padding: 16px;
+            background-color: #242424;
+            border: 1px solid #242424;
+            color: #ffffff;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #1db954;
+        }
+        input::placeholder {
+            color: #757575;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #1db954;
+            color: #000000;
             font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 12px;
         }
-        input:focus { outline: none; border-color: #00ff66; }
-        .login-btn { 
-            width: 100%; 
-            padding: 16px; 
-            background-color: #00ff66; 
-            color: #0b0c10; 
-            font-size: 16px; 
-            font-weight: bold; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            margin-top: 15px; 
-            transition: background 0.2s;
+        .action-btn:active {
+            background-color: #1aa34a;
         }
-        .login-btn:active { background-color: #1db954; }
-        .error { color: #ff3b30; font-size: 14px; margin-top: 15px; display: none; }
-        .signup-link { margin-top: 20px; font-size: 14px; color: #8e8e93; }
-        .signup-link a { color: #45a29e; text-decoration: none; font-weight: bold; }
+        .switch-text {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #b3b3b3;
+        }
+        .switch-text a {
+            color: #1db954;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .error {
+            color: #ff3b30;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="card">
+        <img src="shinzimusic.png" alt="Shinzi Music" class="logo">
         <h2>Shinzi Access</h2>
-        <input type="email" id="email" placeholder="Email Address" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button class="login-btn" onclick="handleLogin()">Log In</button>
+        
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email" required>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        
+        <button class="action-btn" onclick="handleLogin()">Log In</button>
         <div id="error-msg" class="error"></div>
         
-        <div class="signup-link">
-            Need an account? <a href="signup.html">Create one</a>
+        <div class="switch-text">
+            Need an account? <a href="signup.html">Sign up</a>
         </div>
     </div>
 
@@ -74,7 +112,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Stealth Key to bypass GitHub bots
         const firebaseConfig = {
             apiKey: ['AIzaSyA9', '-BquJOixe2dku', 'MA4OR_LH_', '-4kqcFrRE'].join(''),
             authDomain: "shinzi-music.firebaseapp.com",
@@ -88,22 +125,14 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-msg');
-            
-            errorMsg.style.display = "none"; // Reset error
-
-            if(!email || !password) {
-                errorMsg.textContent = "Please enter both email and password.";
-                errorMsg.style.display = "block";
-                return;
-            }
+            errorMsg.style.display = "none";
 
             signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Success! Send them to the main app interface
-                    window.location.href = "settings.html"; 
+                .then(() => {
+                    window.location.href = "index.html";
                 })
-                .catch((error) => {
-                    errorMsg.textContent = "Login failed: Invalid credentials.";
+                .catch(() => {
+                    errorMsg.textContent = "Invalid email or password.";
                     errorMsg.style.display = "block";
                 });
         };
