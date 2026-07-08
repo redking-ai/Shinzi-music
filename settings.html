@@ -61,6 +61,15 @@
             max-width: 600px;
             margin: 0 auto;
         }
+        
+        /* New Link wrapper so it doesn't break your design */
+        .menu-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            width: 100%;
+        }
+        
         .menu-item {
             background-color: #121212;
             border-radius: 8px;
@@ -70,6 +79,10 @@
             justify-content: space-between;
             margin-bottom: 12px;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .menu-item:hover {
+            background-color: #1c1c1c;
         }
         .menu-item-left {
             display: flex;
@@ -112,12 +125,29 @@
             font-weight: bold;
             cursor: pointer;
             width: 100%;
+            transition: transform 0.1s;
+        }
+        .action-btn:active {
+            transform: scale(0.98);
         }
         .btn-logout {
             color: #ff3b30;
         }
         .btn-switch {
             color: #ffffff;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #757575;
+            background-color: #121212;
+            border-top: 1px solid #282828;
+            letter-spacing: 0.5px;
+            margin-top: 40px;
         }
     </style>
 </head>
@@ -138,10 +168,14 @@
     <div class="menu-container">
         <div class="header">Settings</div>
         
-        <div class="menu-item">
-            <div class="menu-item-left"><span class="menu-icon">👤</span> Account</div>
-            <div class="menu-arrow">></div>
-        </div>
+        <!-- Connected to account.html seamlessly -->
+        <a href="account.html" class="menu-link">
+            <div class="menu-item">
+                <div class="menu-item-left"><span class="menu-icon">👤</span> Account</div>
+                <div class="menu-arrow">></div>
+            </div>
+        </a>
+        
         <div class="menu-item">
             <div class="menu-item-left"><span class="menu-icon">⬇️</span> Downloads</div>
             <div class="menu-arrow">></div>
@@ -173,6 +207,10 @@
         <button class="action-btn btn-logout" onclick="handleLogout()">Log ouT</button>
         <button class="action-btn btn-switch">Switch accounT</button>
     </div>
+
+    <footer class="footer">
+        Owner: Red King
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
