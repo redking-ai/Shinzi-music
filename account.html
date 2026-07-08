@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Account - Shinzi Music</title>
     <style>
         body {
@@ -135,14 +135,15 @@
             </div>
         </div>
 
-        <button class="action-btn btn-reset" onclick="alert('Password reset link sent to your email!')">Reset Password</button>
+        <!-- Linked to the real reset function now -->
+        <button class="action-btn btn-reset" onclick="handlePasswordReset()">Reset Password</button>
         <button class="action-btn">Request Data Export</button>
 
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         // Stealth Key Array
         const firebaseConfig = {
@@ -160,22 +161,33 @@
         // Radar: Grabs the logged-in user's details to populate the cards
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Populate Email
                 document.getElementById('accEmail').innerText = user.email || "No Email Provided";
-                
-                // Populate Unique Firebase ID
                 document.getElementById('accUid').innerText = user.uid;
 
-                // Populate Creation Date
                 const creationTime = new Date(user.metadata.creationTime);
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
                 document.getElementById('accDate').innerText = creationTime.toLocaleDateString(undefined, options);
-
             } else {
-                // If they aren't logged in, bounce them to login to secure the page
                 window.location.href = "login.html";
             }
         });
+
+        // Real Firebase Password Reset Engine
+        window.handlePasswordReset = () => {
+            const user = auth.currentUser;
+            if (user && user.email) {
+                sendPasswordResetEmail(auth, user.email)
+                    .then(() => {
+                        alert('Success! A secure password reset link has been sent to ' + user.email);
+                    })
+                    .catch((error) => {
+                        console.error("Reset error:", error);
+                        alert('Reset failed: ' + error.message);
+                    });
+            } else {
+                alert('No active session found. Please log in again.');
+            }
+        };
     </script>
 </body>
 </html>
