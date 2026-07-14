@@ -168,7 +168,7 @@
     <div class="menu-container">
         <div class="header">Settings</div>
         
-        <!-- Connected to account.html seamlessly -->
+        <!-- Connected to account.html -->
         <a href="account.html" class="menu-link">
             <div class="menu-item">
                 <div class="menu-item-left"><span class="menu-icon">👤</span> Account</div>
@@ -176,7 +176,7 @@
             </div>
         </a>
         
-        <!-- Connected to downloadsetting.html seamlessly -->
+        <!-- Connected to downloadsetting.html -->
         <a href="downloadsetting.html" class="menu-link">
             <div class="menu-item">
                 <div class="menu-item-left"><span class="menu-icon">⬇️</span> Downloads</div>
@@ -184,10 +184,14 @@
             </div>
         </a>
         
-        <div class="menu-item">
-            <div class="menu-item-left"><span class="menu-icon">🕒</span> Play Historys</div>
-            <div class="menu-arrow">></div>
-        </div>
+        <!-- Connected to playhistory.html -->
+        <a href="playhistory.html" class="menu-link">
+            <div class="menu-item">
+                <div class="menu-item-left"><span class="menu-icon">🕒</span> Play Historys</div>
+                <div class="menu-arrow">></div>
+            </div>
+        </a>
+        
         <div class="menu-item">
             <div class="menu-item-left"><span class="menu-icon">🔒</span> Privacy</div>
             <div class="menu-arrow">></div>
@@ -207,7 +211,6 @@
     </div>
 
     <div class="action-container">
-        <!-- The click action here triggers the Firebase kill switch below -->
         <button class="action-btn btn-logout" onclick="handleLogout()">Log ouT</button>
         <button class="action-btn btn-switch">Switch accounT</button>
     </div>
