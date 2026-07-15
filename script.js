@@ -1,7 +1,5 @@
 const BACKEND_SEARCH_URL = "https://shinzi-proxy.vercel.app/music/search";
 
-
-
 // ─── STATE ────────────────────────────────────────────────
 let ytPlayer = null;
 let ytReady = false;
