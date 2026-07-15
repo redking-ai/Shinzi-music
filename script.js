@@ -1,4 +1,4 @@
-const BACKEND_SEARCH_URL = "https://shinzi-proxy.onrender.com/music/search";
+const BACKEND_SEARCH_URL = "https://shinzi-proxy.vercel.app/music/search";
 
 // ─── STATE ────────────────────────────────────────────────
 let ytPlayer = null;
