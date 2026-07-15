@@ -12,7 +12,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        /* Navigation Bar */
         .navbar {
             background-color: #121212;
             border-bottom: 1px solid #282828;
@@ -35,7 +34,6 @@
             font-weight: 800;
         }
 
-        /* History List */
         .history-container {
             padding: 20px;
             max-width: 600px;
@@ -50,6 +48,15 @@
             align-items: center;
             gap: 15px;
         }
+        
+        /* Added a tiny style for a fake album cover */
+        .album-art {
+            font-size: 24px;
+            background-color: #282828;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
         .song-info {
             display: flex;
             flex-direction: column;
@@ -71,15 +78,11 @@
         <div class="nav-title">Play History</div>
     </nav>
 
-    <div class="history-container">
-        <div class="history-item">
-            <div class="song-info">
-                <span class="song-title">Recent Track Name</span>
-                <span class="song-artist">Artist Name</span>
-            </div>
-        </div>
-    </div>
+    <!-- The Javascript will inject all the songs right here into this empty box -->
+    <div class="history-container" id="history-list"></div>
+
+    <!-- This links your new brain to the page -->
+    <script src="history.js"></script>
 
 </body>
 </html>
-
