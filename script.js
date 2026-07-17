@@ -273,27 +273,22 @@ if (searchInput) {
   });
 }
 
-// 🔥 THIS FIXES THE MOBILE GLOW ISSUE FOR GOOD 🔥
 window.showSection = function(name) {
   const sections = ["home", "search", "library"];
-  
-  // 1. Show/Hide main content
+
   sections.forEach(sec => {
     const el = document.getElementById(sec + "Section");
     if (el) el.classList.toggle("hidden", name !== sec);
   });
 
-  // 2. Remove 'active' class from ALL Desktop & Mobile buttons
   document.querySelectorAll(".nav-item, .mobile-nav-btn").forEach(el => {
     el.classList.remove("active");
   });
 
-  // 3. Add 'active' class to the correctly clicked button
   const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
-  
   const desktopBtn = document.getElementById("nav" + capitalized);
   if (desktopBtn) desktopBtn.classList.add("active");
-  
+
   const mobileBtn = document.getElementById("mobileNav" + capitalized);
   if (mobileBtn) mobileBtn.classList.add("active");
 };
@@ -403,7 +398,6 @@ window.playFeedTrack = function(containerId, index) {
 
 function escHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-// Quick Card Clicks for Search Filters
 document.querySelectorAll(".quick-card").forEach(card => {
   card.addEventListener("click", () => {
     const query = card.dataset.query;
@@ -416,13 +410,7 @@ document.querySelectorAll(".quick-card").forEach(card => {
 
 // ─── RUN SYSTEM ───────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
-  const h = new Date().getHours();
-  let g = "Good Evening";
-  if (h < 12) g = "Good Morning";
-  else if (h < 17) g = "Good Afternoon";
-  const greetingEl = document.getElementById("greeting");
-  if (greetingEl) greetingEl.textContent = g;
-
+  // Removed old conflicting greeting logic. Firebase handles it now!
   renderFavoritesList();
   loadYTApi();
 
