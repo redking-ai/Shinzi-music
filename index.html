@@ -129,7 +129,6 @@
         /* Responsive Mobile Polish */
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            /* 🔥 FIX: Padding top cranked to 64px so the header fully clears the notch! */
             .main-content { padding: 64px 16px 16px 16px; padding-bottom: 160px; background: linear-gradient(to bottom, #1f1f1f 0%, var(--bg-main) 150px); }
             .top-bar { margin-top: 0px; margin-bottom: 32px; }
             .top-bar h1 { font-size: 22px; }
@@ -277,6 +276,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        
+        // 🔥 Added Firestore imports so it can save to your cloud!
+        import { getFirestore, doc, setDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: ['AIzaSyA9', '-BquJOixe2dku', 'MA4OR_LH_', '-4kqcFrRE'].join(''),
@@ -289,8 +291,27 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        onAuthStateChanged(auth, (user) => {
+        // Bridge to save favorites
+        window.syncFavoritesToCloud = async (favorites) => {
+            const user = auth.currentUser;
+            if (user) {
+                await setDoc(doc(db, "users", user.uid), { favorites: favorites }, { merge: true });
+            }
+        };
+
+        // 🔥 NEW: Bridge to save history
+        window.syncHistoryToCloud = async (track) => {
+            const user = auth.currentUser;
+            if (user) {
+                await setDoc(doc(db, "users", user.uid), { 
+                    history: arrayUnion(track) 
+                }, { merge: true });
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const profileBtn = document.getElementById('userProfileBtn');
                 profileBtn.classList.remove('hidden');
@@ -305,6 +326,17 @@
                 else if (h < 17) g = "Good Afternoon";
 
                 document.getElementById('greeting').innerText = `${g}, ${nameToUse}`;
+                
+                // Fetch favorites on load
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists() && userDoc.data().favorites) {
+                        if (window.loadCloudFavorites) {
+                            window.loadCloudFavorites(userDoc.data().favorites);
+                        }
+                    }
+                } catch(e) { console.error("Cloud sync error", e); }
+
             } else {
                 window.location.href = "login.html";
             }
