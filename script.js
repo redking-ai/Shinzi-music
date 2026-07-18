@@ -22,8 +22,21 @@ const fallbackTracks = [
 // ─── FAVORITES DATABASE ───────────────────────────────────
 let userFavorites = JSON.parse(localStorage.getItem('shinzi_favorites')) || [];
 
+// Automatically load from cloud when you log in
+window.loadCloudFavorites = function(cloudData) {
+  userFavorites = cloudData;
+  localStorage.setItem('shinzi_favorites', JSON.stringify(userFavorites));
+  renderFavoritesList();
+};
+
 function saveFavorites() {
   localStorage.setItem('shinzi_favorites', JSON.stringify(userFavorites));
+  
+  // 🔥 Send a backup to Firebase Cloud!
+  if (window.syncFavoritesToCloud) {
+    window.syncFavoritesToCloud(userFavorites);
+  }
+  
   renderFavoritesList();
 }
 
@@ -91,6 +104,12 @@ function playVideo(videoId, title, channel, thumb) {
   ytPlayer.setVolume(100); 
 
   updateNowPlaying(title, channel, thumb);
+  
+  // 🔥 AUTO-SAVE TO CLOUD HISTORY
+  if (window.syncHistoryToCloud) {
+      window.syncHistoryToCloud({ id: videoId, title: title, channel: channel, thumb: thumb });
+  }
+
   isPlaying = true;
   updatePlayPauseBtn();
   checkIfFavorite();
@@ -410,7 +429,6 @@ document.querySelectorAll(".quick-card").forEach(card => {
 
 // ─── RUN SYSTEM ───────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
-  // Removed old conflicting greeting logic. Firebase handles it now!
   renderFavoritesList();
   loadYTApi();
 
