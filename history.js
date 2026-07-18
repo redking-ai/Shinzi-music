@@ -1,37 +1,51 @@
-// 1. This is your "dummy" data. Later, this will pull from Firebase!
-const playedSongs = [
-    { title: "Sweet Debris Theme", artist: "Shinzi", icon: "🎶" },
-    { title: "Midnight Drift", artist: "Red King", icon: "🎧" },
-    { title: "City Lights", artist: "Shinzi", icon: "📻" }
-];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// 2. Find the empty box in your HTML
-const historyContainer = document.getElementById("history-list");
+// Your Stealth Keys
+const firebaseConfig = {
+    apiKey: ['AIzaSyA9', '-BquJOixe2dku', 'MA4OR_LH_', '-4kqcFrRE'].join(''),
+    authDomain: "shinzi-music.firebaseapp.com",
+    projectId: "shinzi-music",
+    storageBucket: "shinzi-music.firebasestorage.app",
+    messagingSenderId: "985596670426",
+    appId: "1:985596670426:web:b52b69290533ae3dc450e3"
+};
 
-// 3. The Function: Build the HTML automatically
-function loadPlayHistory() {
-    // Clear out anything that might be in the box first
-    historyContainer.innerHTML = ""; 
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    // Loop through every single song in our list above
-    playedSongs.forEach(song => {
-        
-        // Write the HTML structure for the song
-        const songBlock = `
-            <div class="history-item">
-                <div class="album-art">${song.icon}</div>
-                <div class="song-info">
-                    <span class="song-title">${song.title}</span>
-                    <span class="song-artist">${song.artist}</span>
-                </div>
-            </div>
-        `;
-        
-        // Shove that structure directly into the HTML page
-        historyContainer.innerHTML += songBlock;
-    });
-}
+// Wait for user to be logged in, then grab history
+onAuthStateChanged(auth, async (user) => {
+    const historyContainer = document.getElementById("history-list");
+    if (!historyContainer) return;
 
-// 4. Run the function the second the page opens
-window.onload = loadPlayHistory;
-
+    if (user) {
+        try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().history && userDoc.data().history.length > 0) {
+                const history = userDoc.data().history;
+                
+                // Reverse the array so the newest song you played is at the top
+                historyContainer.innerHTML = history.reverse().map(song => `
+                    <div class="history-item">
+                        <img class="album-art" src="${song.thumb}" onerror="this.src='https://img.youtube.com/vi/default/0.jpg'">
+                        <div class="song-info">
+                            <span class="song-title">${song.title}</span>
+                            <span class="song-artist">${song.channel}</span>
+                        </div>
+                    </div>
+                `).join("");
+            } else {
+                historyContainer.innerHTML = "<p style='color:#a7a7a7;'>No history yet. Start playing some music!</p>";
+            }
+        } catch(e) { 
+            console.error("History fetch error:", e);
+            historyContainer.innerHTML = "<p style='color:#ff4444;'>Failed to load history.</p>";
+        }
+    } else {
+        // If not logged in, bounce to login
+        window.location.href = "login.html";
+    }
+});
