@@ -5,84 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play History - Shinzi Music</title>
     <style>
-        body {
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 24px; 
             margin: 0;
-            background-color: #000000;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-
-        .navbar {
-            background-color: #121212;
-            border-bottom: 1px solid #282828;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-        .back-btn {
-            position: absolute;
-            left: 20px;
-            color: #1db954;
-            text-decoration: none;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .nav-title {
-            margin: 0 auto;
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .history-container {
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .history-item {
-            background-color: #121212;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        /* Added a tiny style for a fake album cover */
-        .album-art {
-            font-size: 24px;
-            background-color: #282828;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        .song-info {
-            display: flex;
-            flex-direction: column;
-        }
-        .song-title {
+        h1 { font-size: 28px; font-weight: 800; margin-bottom: 24px; letter-spacing: -0.5px; }
+        .back-btn { 
+            color: #1db954; 
+            text-decoration: none; 
+            font-weight: 700; 
+            margin-bottom: 24px; 
+            display: inline-block; 
             font-size: 16px;
-            font-weight: 600;
         }
-        .song-artist {
-            font-size: 13px;
-            color: #a7a7a7;
+        .history-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 16px; 
+            background: rgba(255,255,255,0.05); 
+            padding: 12px; 
+            margin-bottom: 12px; 
+            border-radius: 8px; 
         }
+        .album-art { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; }
+        .song-info { display: flex; flex-direction: column; justify-content: center; }
+        .song-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .song-artist { color: #a7a7a7; font-size: 13px; }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <h1>Listening History</h1>
+    
+    <div id="history-list">
+        <p style="color:#a7a7a7;">Loading your history...</p>
+    </div>
 
-    <nav class="navbar">
-        <a href="settings.html" class="back-btn"><</a>
-        <div class="nav-title">Play History</div>
-    </nav>
-
-    <!-- The Javascript will inject all the songs right here into this empty box -->
-    <div class="history-container" id="history-list"></div>
-
-    <!-- This links your new brain to the page -->
-    <script src="history.js"></script>
-
+    <!-- 🔥 This pulls the history logic -->
+    <script type="module" src="history.js"></script>
 </body>
 </html>
