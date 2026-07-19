@@ -64,7 +64,15 @@ window.onYouTubeIframeAPIReady = function () {
     height: "1", width: "1",
     playerVars: { autoplay: 0, controls: 0 },
     events: {
-      onReady: () => { ytReady = true; ytPlayer.setVolume(100); },
+      onReady: () => { 
+          ytReady = true; 
+          ytPlayer.setVolume(100); 
+          // 🔥 Load the ghost track into memory so the play button works instantly
+          if (window.pendingCue) {
+              ytPlayer.cueVideoById(window.pendingCue);
+              window.pendingCue = null;
+          }
+      },
       onStateChange: onPlayerStateChange,
     },
   });
@@ -75,7 +83,7 @@ function onPlayerStateChange(e) {
     isPlaying = true;
     updatePlayPauseBtn();
     startProgressUpdate();
-  } else if (e.data === YT.PlayerState.PAUSED) {
+  } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) {
     isPlaying = false;
     updatePlayPauseBtn();
     stopProgressUpdate();
@@ -88,6 +96,12 @@ function onPlayerStateChange(e) {
 // ─── PLAY LOGIC ───────────────────────────────────────────
 function playVideo(videoId, title, channel, thumb) {
   if (!ytReady) { alert("Player loading, try again in a few seconds!"); return; }
+
+  // 🔥 Unhide the player bar when a user manually clicks a song
+  document.getElementById('mainPlayerBar')?.classList.remove('hidden-player');
+  
+  // 🔥 Save the song to localStorage so the app remembers it for next time
+  localStorage.setItem('shinzi_last_played', JSON.stringify({id: videoId, title: title, channel: channel, thumb: thumb}));
 
   ytPlayer.loadVideoById(videoId);
   ytPlayer.setVolume(100); 
@@ -140,13 +154,14 @@ function updatePlayPauseBtn() {
   
   const mobilePlay = document.getElementById("mobilePlayBtn");
   if(mobilePlay) {
+    // 🔥 FIXED: Toggles beautifully between Play and Pause on mobile!
     mobilePlay.innerHTML = isPlaying 
-      ? `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` 
-      : `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+      ? `<svg viewBox="0 0 24 24" fill="#fff" width="32" height="32"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>` 
+      : `<svg viewBox="0 0 24 24" fill="#fff" width="32" height="32"><path d="M8 5v14l11-7z"/></svg>`;
   }
 }
 
-// ─── CONTROLS WIRING (Now includes Shuffle/Repeat) ────────
+// ─── CONTROLS WIRING ────────
 document.getElementById("btnPlayPause")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
 document.getElementById("innerPlayBtn")?.addEventListener("click", togglePlayPause);
 document.getElementById("mobilePlayBtn")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
@@ -157,7 +172,6 @@ document.getElementById("innerNext")?.addEventListener("click", playNext);
 document.getElementById("btnPrev")?.addEventListener("click", (e) => { e.stopPropagation(); playPrev(); });
 document.getElementById("innerPrev")?.addEventListener("click", playPrev);
 
-// 🔥 NEW: Toggle Shuffle & Repeat functions
 document.getElementById("btnShuffle")?.addEventListener("click", (e) => {
     e.stopPropagation();
     isShuffle = !isShuffle;
@@ -275,7 +289,6 @@ if (searchInput) {
 }
 
 window.showSection = function(name) {
-  // 🔥 FIXED: Now includes "settings" in the loop!
   const sections = ["home", "search", "library", "settings"];
 
   sections.forEach(sec => {
@@ -399,6 +412,18 @@ document.querySelectorAll(".quick-card").forEach(card => {
 // ─── RUN SYSTEM ───────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   renderFavoritesList();
+  
+  // 🔥 THE SPOTIFY MEMORY FIX
+  const lastPlayedTrack = JSON.parse(localStorage.getItem('shinzi_last_played'));
+  if (lastPlayedTrack) {
+      document.getElementById('mainPlayerBar')?.classList.remove('hidden-player');
+      updateNowPlaying(lastPlayedTrack.title, lastPlayedTrack.channel, lastPlayedTrack.thumb);
+      currentQueue = [lastPlayedTrack];
+      currentIndex = 0;
+      window.pendingCue = lastPlayedTrack.id; // Primes the play button invisibly
+      checkIfFavorite();
+  }
+
   loadYTApi();
   await loadFeed("Top Hindi Songs", "madeForYou");
   await loadFeed("Trending Music India", "trendingRow");
