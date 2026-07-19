@@ -10,7 +10,7 @@ let isShuffle = false;
 let isRepeat = false;
 let progressInterval = null;
 
-// ─── FALLBACK DATA (Safe links that never show gray boxes) ───
+// ─── FALLBACK DATA ───
 const fallbackTracks = [
   { id: "UxxajLWwzqY", title: "Jujutsu Kaisen - SPECIALZ", channel: "TOHO animation", thumb: "https://img.youtube.com/vi/UxxajLWwzqY/0.jpg" },
   { id: "lz157kuOMC8", title: "Live Another Day", channel: "KORDHELL", thumb: "https://img.youtube.com/vi/lz157kuOMC8/0.jpg" },
@@ -22,7 +22,6 @@ const fallbackTracks = [
 // ─── FAVORITES DATABASE ───────────────────────────────────
 let userFavorites = JSON.parse(localStorage.getItem('shinzi_favorites')) || [];
 
-// Automatically load from cloud when you log in
 window.loadCloudFavorites = function(cloudData) {
   userFavorites = cloudData;
   localStorage.setItem('shinzi_favorites', JSON.stringify(userFavorites));
@@ -31,24 +30,17 @@ window.loadCloudFavorites = function(cloudData) {
 
 function saveFavorites() {
   localStorage.setItem('shinzi_favorites', JSON.stringify(userFavorites));
-  
-  // 🔥 Send a backup to Firebase Cloud!
-  if (window.syncFavoritesToCloud) {
-    window.syncFavoritesToCloud(userFavorites);
-  }
-  
+  if (window.syncFavoritesToCloud) { window.syncFavoritesToCloud(userFavorites); }
   renderFavoritesList();
 }
 
 function renderFavoritesList() {
   const container = document.getElementById("favoritesList");
   if (!container) return;
-
   if (userFavorites.length === 0) {
     container.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #a7a7a7;">No favorites yet. Tap the heart to save songs!</div>`;
     return;
   }
-
   container.innerHTML = userFavorites.map((track, i) => `
     <div class="search-item" onclick="playFromFavorites(${i})">
       <img class="search-thumb" src="${track.thumb}" alt="">
@@ -72,10 +64,7 @@ window.onYouTubeIframeAPIReady = function () {
     height: "1", width: "1",
     playerVars: { autoplay: 0, controls: 0 },
     events: {
-      onReady: () => { 
-        ytReady = true; 
-        ytPlayer.setVolume(100); 
-      },
+      onReady: () => { ytReady = true; ytPlayer.setVolume(100); },
       onStateChange: onPlayerStateChange,
     },
   });
@@ -104,8 +93,6 @@ function playVideo(videoId, title, channel, thumb) {
   ytPlayer.setVolume(100); 
 
   updateNowPlaying(title, channel, thumb);
-  
-  // 🔥 AUTO-SAVE TO CLOUD HISTORY
   if (window.syncHistoryToCloud) {
       window.syncHistoryToCloud({ id: videoId, title: title, channel: channel, thumb: thumb });
   }
@@ -130,9 +117,7 @@ function updateNowPlaying(title, channel, thumb) {
 
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: safeTitle,
-      artist: safeChannel,
-      artwork: [{ src: highResThumb, sizes: '512x512', type: 'image/jpeg' }]
+      title: safeTitle, artist: safeChannel, artwork: [{ src: highResThumb, sizes: '512x512', type: 'image/jpeg' }]
     });
     navigator.mediaSession.setActionHandler('play', togglePlayPause);
     navigator.mediaSession.setActionHandler('pause', togglePlayPause);
@@ -150,10 +135,9 @@ function togglePlayPause() {
 function updatePlayPauseBtn() {
   document.getElementById("playIcon")?.classList.toggle("hidden", isPlaying);
   document.getElementById("pauseIcon")?.classList.toggle("hidden", !isPlaying);
-
   document.getElementById("innerPlayIcon")?.classList.toggle("hidden", isPlaying);
   document.getElementById("innerPauseIcon")?.classList.toggle("hidden", !isPlaying);
-
+  
   const mobilePlay = document.getElementById("mobilePlayBtn");
   if(mobilePlay) {
     mobilePlay.innerHTML = isPlaying 
@@ -162,7 +146,7 @@ function updatePlayPauseBtn() {
   }
 }
 
-// ─── CONTROLS WIRING ──────────────────────────────────────
+// ─── CONTROLS WIRING (Now includes Shuffle/Repeat) ────────
 document.getElementById("btnPlayPause")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
 document.getElementById("innerPlayBtn")?.addEventListener("click", togglePlayPause);
 document.getElementById("mobilePlayBtn")?.addEventListener("click", (e) => { e.stopPropagation(); togglePlayPause(); });
@@ -172,6 +156,19 @@ document.getElementById("innerNext")?.addEventListener("click", playNext);
 
 document.getElementById("btnPrev")?.addEventListener("click", (e) => { e.stopPropagation(); playPrev(); });
 document.getElementById("innerPrev")?.addEventListener("click", playPrev);
+
+// 🔥 NEW: Toggle Shuffle & Repeat functions
+document.getElementById("btnShuffle")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    isShuffle = !isShuffle;
+    e.currentTarget.classList.toggle("active-mode", isShuffle);
+});
+
+document.getElementById("btnRepeat")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    isRepeat = !isRepeat;
+    e.currentTarget.classList.toggle("active-mode", isRepeat);
+});
 
 function playNext() {
   if (currentQueue.length === 0) return;
@@ -188,10 +185,7 @@ function playPrev() {
 }
 
 // ─── PROGRESS BAR SYNC ────────────────────────────────────
-function startProgressUpdate() {
-  stopProgressUpdate();
-  progressInterval = setInterval(updateProgress, 500);
-}
+function startProgressUpdate() { stopProgressUpdate(); progressInterval = setInterval(updateProgress, 500); }
 function stopProgressUpdate() { if (progressInterval) clearInterval(progressInterval); }
 
 function updateProgress() {
@@ -230,16 +224,10 @@ function formatTime(sec) {
 function toggleFavoriteAction(e) {
   e.stopPropagation();
   if (currentIndex === -1) return;
-
   const track = currentQueue[currentIndex];
   const existsIndex = userFavorites.findIndex(t => t.id === track.id);
-
-  if (existsIndex > -1) {
-    userFavorites.splice(existsIndex, 1);
-  } else {
-    userFavorites.push(track);
-  }
-
+  if (existsIndex > -1) { userFavorites.splice(existsIndex, 1); } 
+  else { userFavorites.push(track); }
   saveFavorites();
   checkIfFavorite();
 }
@@ -248,7 +236,6 @@ function checkIfFavorite() {
   if (currentIndex === -1) return;
   const track = currentQueue[currentIndex];
   const isFav = userFavorites.some(t => t.id === track.id);
-
   document.getElementById("npHeart")?.classList.toggle("liked", isFav);
   document.getElementById("innerHeart")?.classList.toggle("liked", isFav);
 }
@@ -262,15 +249,10 @@ const innerPlayerScreen = document.getElementById("innerPlayerScreen");
 const closeInnerScreen = document.getElementById("closeInnerScreen");
 
 if (mainPlayerBar && innerPlayerScreen) {
-    mainPlayerBar.addEventListener("click", () => {
-        innerPlayerScreen.classList.add("active");
-    });
+    mainPlayerBar.addEventListener("click", () => { innerPlayerScreen.classList.add("active"); });
 }
 if (closeInnerScreen && innerPlayerScreen) {
-    closeInnerScreen.addEventListener("click", (e) => {
-        e.stopPropagation();
-        innerPlayerScreen.classList.remove("active");
-    });
+    closeInnerScreen.addEventListener("click", (e) => { e.stopPropagation(); innerPlayerScreen.classList.remove("active"); });
 }
 
 // ─── SEARCH & BULLETPROOF UI NAVIGATION ────────────────────
@@ -293,7 +275,8 @@ if (searchInput) {
 }
 
 window.showSection = function(name) {
-  const sections = ["home", "search", "library"];
+  // 🔥 FIXED: Now includes "settings" in the loop!
+  const sections = ["home", "search", "library", "settings"];
 
   sections.forEach(sec => {
     const el = document.getElementById(sec + "Section");
@@ -320,11 +303,8 @@ async function searchYT(query) {
   try {
     const data = await fetchFromBackendProxy(query);
     const items = data.items || [];
-
     currentQueue = items.map((item) => ({
-      id: item.id.videoId, 
-      title: item.snippet.title, 
-      channel: item.snippet.channelTitle,
+      id: item.id.videoId, title: item.snippet.title, channel: item.snippet.channelTitle,
       thumb: item.snippet.thumbnails?.high?.url || `https://img.youtube.com/vi/${item.id.videoId}/0.jpg`,
     }));
 
@@ -344,23 +324,16 @@ async function searchYT(query) {
       }
     }
   } catch (err) {
-    if (results) {
-      results.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #ff4444;">Search failed. Try again.</div>`;
-    }
+    if (results) results.innerHTML = `<div class="status-msg-box" style="padding: 20px; color: #ff4444;">Search failed. Try again.</div>`;
   }
 }
 
 window.playFromQueue = function(index) {
-  currentIndex = index;
-  const track = currentQueue[index];
-  playVideo(track.id, track.title, track.channel, track.thumb);
+  currentIndex = index; const track = currentQueue[index]; playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
 window.playFromFavorites = function(index) {
-  currentQueue = [...userFavorites]; 
-  currentIndex = index;
-  const track = currentQueue[index];
-  playVideo(track.id, track.title, track.channel, track.thumb);
+  currentQueue = [...userFavorites]; currentIndex = index; const track = currentQueue[index]; playVideo(track.id, track.title, track.channel, track.thumb);
 };
 
 // ─── SEQUENTIAL WATERFALL FEED LOADER ───────────────────────
@@ -386,16 +359,12 @@ async function loadFeed(query, containerId) {
     const items = data.items || [];
     if (items.length > 0) {
       container._feedData = items.map((item) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        channel: item.snippet.channelTitle,
+        id: item.id.videoId, title: item.snippet.title, channel: item.snippet.channelTitle,
         thumb: item.snippet.thumbnails?.high?.url || `https://img.youtube.com/vi/${item.id.videoId}/0.jpg`,
       }));
       container.innerHTML = generateCardsHTML(containerId, container._feedData);
     }
-  } catch (err) {
-    console.warn(`Keeping backup fallback tracks on screen for ${containerId}`);
-  }
+  } catch (err) { console.warn(`Keeping backup fallback tracks on screen for ${containerId}`); }
 }
 
 async function fetchFromBackendProxy(query) {
@@ -431,7 +400,6 @@ document.querySelectorAll(".quick-card").forEach(card => {
 document.addEventListener("DOMContentLoaded", async () => {
   renderFavoritesList();
   loadYTApi();
-
   await loadFeed("Top Hindi Songs", "madeForYou");
   await loadFeed("Trending Music India", "trendingRow");
   await loadFeed("Anime OST", "animeRow");
