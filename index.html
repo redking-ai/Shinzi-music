@@ -24,7 +24,6 @@
 
         /* Sidebar Desktop */
         .sidebar { width: 240px; background-color: var(--bg-sidebar); padding: 24px; display: flex; flex-direction: column; gap: 24px; }
-
         .logo-container { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
         .brand-logo-img { width: 40px; height: 40px; object-fit: cover; object-position: center 15%; border-radius: 50%; box-shadow: 0 4px 12px rgba(138, 43, 226, 0.4); }
 
@@ -44,14 +43,13 @@
 
         h2 { font-size: 24px; font-weight: 700; margin: 40px 0 20px 0; letter-spacing: -0.5px; }
 
-        /* Quick Shortcuts */
+        /* Quick Shortcuts & Cards */
         .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
         .quick-card { background: rgba(255,255,255,0.08); border-radius: 6px; display: flex; align-items: center; overflow: hidden; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; }
         .quick-card:hover { background: rgba(255,255,255,0.15); transform: scale(1.02); }
         .quick-card-img { width: 80px; height: 80px; background: #282828; display: flex; align-items: center; justify-content: center; box-shadow: 4px 0 10px rgba(0,0,0,0.3); }
         .quick-card h3 { font-size: 16px; padding: 16px; font-weight: 700; }
 
-        /* Music Rows */
         .shelf-row { display: flex; gap: 24px; overflow-x: auto; padding-bottom: 12px; scroll-behavior: smooth; }
         .shelf-row::-webkit-scrollbar { display: none; }
         .music-card { background-color: var(--bg-card); min-width: 180px; max-width: 180px; padding: 16px; border-radius: 8px; cursor: pointer; position: relative; transition: background-color 0.3s ease; }
@@ -59,12 +57,8 @@
         .card-thumb { width: 148px; height: 148px; object-fit: cover; border-radius: 6px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
         .card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-sub { font-size: 13px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Floating Play Button */
         .card-play { position: absolute; right: 24px; top: 116px; width: 48px; height: 48px; border-radius: 50%; background-color: var(--accent); border: none; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(8px); transition: all 0.3s ease; box-shadow: 0 8px 16px rgba(0,0,0,0.4); cursor: pointer; }
         .music-card:hover .card-play { opacity: 1; transform: translateY(0); }
-        .card-play:hover { transform: scale(1.05) translateY(0); background-color: #1ed760; }
-        .card-play svg { width: 24px; height: 24px; fill: #000; }
 
         /* Search Interface */
         .search-container { position: relative; max-width: 500px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
@@ -80,6 +74,13 @@
         .search-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
         .search-channel { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
 
+        /* Settings Integrated UI */
+        .menu-list { display: flex; flex-direction: column; gap: 12px; }
+        .menu-item { background: var(--bg-card); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+        .menu-item:hover { background: #1a1a1a; }
+        .menu-item-left { display: flex; align-items: center; gap: 16px; }
+        .logout-btn { background: #2a0e0e; color: #ff4444; text-align: center; justify-content: center; margin-top: 24px; padding: 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: block; border: none; width: 100%; font-size: 16px; }
+
         /* Persistent Bottom Player Console */
         .playback-console-bar { height: 90px; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); border-top: 1px solid #282828; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 999; cursor: pointer; }
         .track-metadata-block { display: flex; align-items: center; gap: 14px; width: 30%; min-width: 180px; }
@@ -94,6 +95,7 @@
         .button-cluster { display: flex; align-items: center; gap: 24px; }
         .media-action-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s ease; }
         .media-action-btn:hover { color: var(--text-main); }
+        .media-action-btn.active-mode { color: var(--accent); }
         .btn-master-play { width: 32px; height: 32px; border-radius: 50%; background-color: #ffffff; color: #000000 !important; transform: scale(1); transition: transform 0.1s; }
         .btn-master-play:hover { transform: scale(1.1); }
 
@@ -101,9 +103,8 @@
         .timestamp-label { font-size: 11px; color: var(--text-sub); min-width: 40px; text-align: center; }
         .progress-track-bar { flex: 1; height: 4px; background-color: #4f4f4f; border-radius: 2px; position: relative; cursor: pointer; overflow: hidden; }
         .progress-fill-line { height: 100%; background-color: #ffffff; border-radius: 2px; width: 0%; transition: background-color 0.2s; }
-        .progress-track-bar:hover .progress-fill-line { background-color: var(--accent); }
 
-        /* INNER FULLSCREEN PLAYER */
+        /* INNER FULLSCREEN PLAYER (Updated with Shuffle & Repeat) */
         .inner-player-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(180deg, #2a2a2a 0%, #000000 100%); z-index: 2000; display: flex; flex-direction: column; padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); overflow-y: auto; }
         .inner-player-screen.active { transform: translateY(0); }
         .inner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-top: 10px; }
@@ -123,10 +124,10 @@
         .inner-progress-bar { width: 100%; height: 4px; background-color: #4f4f4f; border-radius: 2px; position: relative; cursor: pointer; }
         .inner-progress-fill { height: 100%; background-color: #fff; border-radius: 2px; width: 0%; }
 
-        .inner-controls { display: flex; justify-content: space-between; align-items: center; max-width: 300px; margin: 0 auto; width: 100%; }
+        .inner-controls { display: flex; justify-content: space-between; align-items: center; max-width: 350px; margin: 0 auto; width: 100%; }
         .inner-play-btn { width: 64px; height: 64px; border-radius: 50%; background-color: #fff; color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* Responsive Mobile Polish */
+        /* Responsive Mobile */
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .main-content { padding: 64px 16px 16px 16px; padding-bottom: 160px; background: linear-gradient(to bottom, #1f1f1f 0%, var(--bg-main) 150px); }
@@ -135,14 +136,13 @@
             .quick-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .music-card { min-width: 140px; max-width: 140px; padding: 12px; }
             .card-thumb { width: 116px; height: 116px; margin-bottom: 8px; }
-            .card-play { display: none !important; }
 
             .playback-console-bar { bottom: 70px; height: 60px; padding: 0 12px; border-radius: 8px; margin: 8px; width: calc(100% - 16px); background-color: rgba(30, 30, 30, 0.95); box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
             .secondary-utilities-block, .core-controls-wrapper { display: none; }
             .track-metadata-block { width: 100%; display: flex; justify-content: space-between; }
 
             .mobile-bottom-navbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px); border-top: 1px solid #282828; display: flex; justify-content: space-around; z-index: 1000; padding: 8px 0; }
-            .mobile-nav-btn { background: none; border: none; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 500; cursor: pointer; transition: color 0.2s; padding: 8px; text-decoration: none; }
+            .mobile-nav-btn { background: none; border: none; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 500; cursor: pointer; transition: color 0.2s; padding: 8px; }
             .mobile-nav-btn.active, .mobile-nav-btn:hover { color: var(--text-main); }
         }
         @media (min-width: 769px) { .mobile-bottom-navbar { display: none; } .mobile-mini-play { display: none; } }
@@ -160,7 +160,8 @@
                 <li><a id="navHome" class="nav-item active" onclick="showSection('home')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a></li>
                 <li><a id="navSearch" class="nav-item" onclick="showSection('search')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</a></li>
                 <li><a id="navLibrary" class="nav-item" onclick="showSection('library')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>Your Library</a></li>
-                <li><a href="settings.html" class="nav-item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>Settings</a></li>
+                <!-- FIXED: Settings is now a direct link! -->
+                <li><a id="navSettings" class="nav-item" onclick="showSection('settings')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>Settings</a></li>
             </ul>
         </nav>
 
@@ -168,7 +169,7 @@
             <section id="homeSection">
                 <div class="top-bar">
                     <h1 id="greeting">Welcome</h1>
-                    <a href="settings.html" id="userProfileBtn" class="profile-icon hidden">?</a>
+                    <button id="userProfileBtn" class="profile-icon hidden" onclick="showSection('settings')" style="border:none;">?</button>
                 </div>
 
                 <div class="quick-grid">
@@ -194,9 +195,25 @@
                 <h1>Your Favorites</h1>
                 <div id="favoritesList" class="results-vertical-list"></div>
             </section>
+
+            <!-- 🔥 NEW: Settings is now perfectly integrated here! -->
+            <section id="settingsSection" class="hidden">
+                <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 24px;">Settings</h1>
+                <div class="menu-list">
+                    <a href="account.html" class="menu-item"><div class="menu-item-left">👤 Account</div> <div>></div></a>
+                    <a href="downloadsetting.html" class="menu-item"><div class="menu-item-left">⬇️ Downloads</div> <div>></div></a>
+                    <a href="playhistory.html" class="menu-item"><div class="menu-item-left">🕒 Play History</div> <div>></div></a>
+                    <a href="privacy.html" class="menu-item"><div class="menu-item-left">🔒 Privacy</div> <div>></div></a>
+                    <a href="#" class="menu-item"><div class="menu-item-left">🌌 AI References <span style="color:var(--accent); font-size:12px; margin-left:8px;">(Soon)</span></div> <div>></div></a>
+                    <a href="refer.html" class="menu-item"><div class="menu-item-left">🎁 Refer</div> <div>></div></a>
+                    <a href="additional.html" class="menu-item"><div class="menu-item-left">⚙️ Additional Settings</div> <div>></div></a>
+                    <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+                </div>
+            </section>
         </main>
     </div>
 
+    <!-- Bottom Player -->
     <footer class="playback-console-bar" id="mainPlayerBar">
         <div class="track-metadata-block">
             <div id="npThumb" class="meta-artwork-frame"><svg viewBox="0 0 24 24" width="24" height="24" fill="#a7a7a7"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>
@@ -226,6 +243,7 @@
         <div class="secondary-utilities-block"></div>
     </footer>
 
+    <!-- Fullscreen Player -->
     <div class="inner-player-screen" id="innerPlayerScreen">
         <div class="inner-header">
             <button class="close-inner-btn" id="closeInnerScreen"><svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg></button>
@@ -253,21 +271,25 @@
             </div>
         </div>
 
+        <!-- 🔥 FIXED: Shuffle, Prev, Play, Next, Repeat matching YT Music -->
         <div class="inner-controls">
+            <button class="media-action-btn" id="btnShuffle"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button>
             <button class="media-action-btn" id="innerPrev"><svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
             <button class="inner-play-btn" id="innerPlayBtn">
                 <svg id="innerPlayIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <svg id="innerPauseIcon" class="hidden" viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             </button>
             <button class="media-action-btn" id="innerNext"><svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+            <button class="media-action-btn" id="btnRepeat"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg></button>
         </div>
     </div>
 
+    <!-- Mobile Nav Bar FIXED to link properly to new sections -->
     <nav class="mobile-bottom-navbar">
         <button id="mobileNavHome" class="mobile-nav-btn active" onclick="showSection('home')"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</button>
         <button id="mobileNavSearch" class="mobile-nav-btn" onclick="showSection('search')"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
         <button id="mobileNavLibrary" class="mobile-nav-btn" onclick="showSection('library')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>Library</button>
-        <a href="settings.html" class="mobile-nav-btn"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>Settings</a>
+        <button id="mobileNavSettings" class="mobile-nav-btn" onclick="showSection('settings')"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>Settings</button>
     </nav>
 
     <div id="ytPlayer"></div>
@@ -276,8 +298,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        
-        // 🔥 Added Firestore imports so it can save to your cloud!
         import { getFirestore, doc, setDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -293,22 +313,14 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Bridge to save favorites
         window.syncFavoritesToCloud = async (favorites) => {
             const user = auth.currentUser;
-            if (user) {
-                await setDoc(doc(db, "users", user.uid), { favorites: favorites }, { merge: true });
-            }
+            if (user) { await setDoc(doc(db, "users", user.uid), { favorites: favorites }, { merge: true }); }
         };
 
-        // 🔥 NEW: Bridge to save history
         window.syncHistoryToCloud = async (track) => {
             const user = auth.currentUser;
-            if (user) {
-                await setDoc(doc(db, "users", user.uid), { 
-                    history: arrayUnion(track) 
-                }, { merge: true });
-            }
+            if (user) { await setDoc(doc(db, "users", user.uid), { history: arrayUnion(track) }, { merge: true }); }
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -327,25 +339,19 @@
 
                 document.getElementById('greeting').innerText = `${g}, ${nameToUse}`;
                 
-                // Fetch favorites on load
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists() && userDoc.data().favorites) {
-                        if (window.loadCloudFavorites) {
-                            window.loadCloudFavorites(userDoc.data().favorites);
-                        }
+                        if (window.loadCloudFavorites) window.loadCloudFavorites(userDoc.data().favorites);
                     }
                 } catch(e) { console.error("Cloud sync error", e); }
-
             } else {
                 window.location.href = "login.html";
             }
         });
 
         window.handleLogout = () => {
-            signOut(auth).then(() => {
-                window.location.href = "login.html";
-            }).catch((error) => console.error("Logout failed", error));
+            signOut(auth).then(() => { window.location.href = "login.html"; }).catch((error) => console.error("Logout failed", error));
         };
     </script>
 </body>
